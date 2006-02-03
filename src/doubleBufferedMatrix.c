@@ -11,7 +11,8 @@
  **      Based on ideas and code from my RMAExpress program
  **
  **  History
- **  Jan 31, 2006 Initial version
+ **  Jan 31, 2006 - Initial version
+ **  Feb 2, 2006 - Fix slight logic error bug in BufferResize
  **
  *****************************************************/
 
@@ -1233,8 +1234,18 @@ int dbm_ResizeBuffer(doubleBufferedMatrix Matrix, int new_maxrow, int new_maxcol
   if (!(Matrix->colmode)){
     dbm_ResizeRowBuffer(Matrix,new_maxrow);
   } else {
-    /* No actual row buffer active. So just increase potential size */
-    Matrix->max_rows = new_maxrow; 
+    /* No actual row buffer active. So just increase potential size.
+       with caveats: Can't: Be smaller than 1 or be bigger than number of rows
+       if those cases exist go to nearest possible value. ie 1 or max
+
+    */
+    if (new_maxrow < 1){
+      Matrix->max_rows = 1;
+    } else if (new_maxrow > Matrix->rows){
+      Matrix->max_rows = Matrix->rows;
+    } else {
+      Matrix->max_rows = new_maxrow;
+    } 
   }
 
 }

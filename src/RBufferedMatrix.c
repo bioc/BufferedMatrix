@@ -9,6 +9,9 @@
  **
  **  History
  **  Feb 2, 2006 Initial version
+ **  Feb 3, 2006 Add Finalizer
+ **  Feb 7, 2006 Add functionality for accessing columns or rows at a time
+ **              and returning as an R matrix
  **
  *****************************************************/
 
@@ -16,6 +19,33 @@
 
 #include <Rdefines.h>
 #include <Rinternals.h>
+
+
+/* Pre-declare the function which deallocated the c part of the BufferedMatrix */
+
+SEXP R_bm_Destroy(SEXP R_BufferedMatrix);
+
+
+/*****************************************************
+ **
+ ** static void R_bm_Finalizer(SEXP R_BufferedMatrix)
+ **
+ ** This is the Finalizer function that is called 
+ ** when the object is deleted on gc() or when R quits.
+ ** It deallocates everything and deletes all the 
+ ** temporary files etc
+ **
+ *****************************************************/
+
+
+
+static void R_bm_Finalizer(SEXP R_BufferedMatrix){
+
+  R_bm_Destroy(R_BufferedMatrix);
+
+}
+
+
 
 
 /*****************************************************
@@ -51,6 +81,10 @@ SEXP R_bm_Create(SEXP R_prefix, SEXP R_directory, SEXP R_max_rows, SEXP R_max_co
   Matrix = dbm_alloc(max_rows,max_cols,prefix,directory);
 
   PROTECT(val = R_MakeExternalPtr(Matrix, R_NilValue, R_NilValue));
+
+  R_RegisterCFinalizerEx(val, (R_CFinalizer_t)R_bm_Finalizer,TRUE);
+
+
   UNPROTECT(1);
   return val;
 }
@@ -162,7 +196,6 @@ SEXP R_bm_Destroy(SEXP R_BufferedMatrix){
   doubleBufferedMatrix Matrix;
   
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
-  
   if (Matrix != NULL){
     dbm_free(Matrix);
   }
@@ -651,5 +684,328 @@ SEXP R_bm_setValue(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col, SEXP value){
   LOGICAL(returnvalue)[0] = TRUE;
   UNPROTECT(1);
   return returnvalue;
+
+}
+
+
+
+
+
+
+
+/*****************************************************
+ **
+ ** SEXP R_bm_getValueColumn(SEXP R_BufferedMatrix, SEXP R_col)
+ **
+ ** SEXP R_BufferedMatrix
+ ** SEXP R_col - Columns to access in the matrix
+ **
+ ** RETURNS values stored in BufferedMatrix at specified location
+ **         Note that if a location outside the matrix dimensions is 
+ **         Specified then NA is returned.
+ ** 
+ **
+ *****************************************************/
+
+SEXP R_bm_getValueColumn(SEXP R_BufferedMatrix, SEXP R_col){
+
+
+  
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i,j;
+  int ncols;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  ncols = length(R_col);
+    
+  PROTECT(returnvalue=allocMatrix(REALSXP,dbm_getRows(Matrix),ncols));
+
+  if (Matrix == NULL){ 
+    for (i=0; i < dbm_getRows(Matrix)*ncols; i++){
+      REAL(returnvalue)[i] = R_NaReal;
+    }
+    UNPROTECT(1); 
+    return returnvalue;
+  }
+
+	  
+  if(!dbm_getValueColumn(Matrix, INTEGER(R_col), REAL(returnvalue),ncols)){
+    for (j = 0; j < ncols; j++){
+      for (i=0; i < dbm_getRows(Matrix); i++){
+	REAL(returnvalue)[j*dbm_getRows(Matrix) + i] = R_NaReal;
+      }
+    }
+  }
+  
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
+
+/*****************************************************
+ **
+ ** SEXP R_bm_getValueRow(SEXP R_BufferedMatrix, SEXP R_row)
+ **
+ ** SEXP R_BufferedMatrix
+ ** SEXP R_row - Rows to access in the matrix
+ **
+ ** RETURNS values stored in BufferedMatrix at specified location
+ **         Note that if a location outside the matrix dimensions is 
+ **         Specified then NA is returned.
+ ** 
+ **
+ *****************************************************/
+
+SEXP R_bm_getValueRow(SEXP R_BufferedMatrix, SEXP R_row){
+  
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i,j;
+  int nrows;
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  nrows = length(R_row);
+  
+
+  PROTECT(returnvalue=allocMatrix(REALSXP,nrows,dbm_getCols(Matrix)));
+
+  if (Matrix == NULL){ 
+    for (i=0; i < dbm_getCols(Matrix)*nrows; i++){
+      REAL(returnvalue)[i] = R_NaReal;
+    }
+    UNPROTECT(1); 
+    return returnvalue;
+  }
+  
+
+ 
+  if(!dbm_getValueRow(Matrix, INTEGER(R_row), REAL(returnvalue), nrows)){
+    for (i = 0; i < nrows; i++){
+      for (j=0; j < dbm_getCols(Matrix); j++){
+	REAL(returnvalue)[j*nrows + i] = R_NaReal;
+      }
+    } 
+  }
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
+
+
+/*****************************************************
+ **
+ ** SEXP R_bm_getValueSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col)
+ **
+ ** SEXP R_BufferedMatrix
+ ** SEXP R_row - Rows to access in the matrix
+ ** SEXP R_col - Columns to access in the matrix
+ **
+ ** RETURNS values stored in BufferedMatrix at specified locations
+ **         Note that if a location outside the matrix dimensions is 
+ **         Specified then NA is returned.
+ ** 
+ ** This function gets specified section of the matrix as specified
+ ** by rows and columns
+ **
+ *****************************************************/
+
+
+SEXP R_bm_getValueSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
+  
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i,j;
+  int nrows,ncols;
+
+  double tempbuffer;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  nrows = length(R_row);
+  ncols = length(R_col);
+  
+
+  PROTECT(returnvalue=allocMatrix(REALSXP,nrows,ncols));
+
+  if (Matrix == NULL){ 
+    for (i=0; i < ncols*nrows; i++){
+      REAL(returnvalue)[i] = R_NaReal;
+    }
+    UNPROTECT(1); 
+    return returnvalue;
+  }
+  
+  for (j=0; j < ncols; j++){
+    for (i = 0; i < nrows; i++){
+      if(!dbm_getValue(Matrix,INTEGER(R_row)[i],  INTEGER(R_col)[j], &REAL(returnvalue)[j*nrows + i])){
+	REAL(returnvalue)[j*nrows + i] = R_NaReal;
+      }
+    }
+  }
+  UNPROTECT(1); 
+  return returnvalue;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+/*****************************************************
+ **
+ ** SEXP R_bm_setValueColumn(SEXP R_BufferedMatrix, SEXP R_col, SEXP value)
+ **
+ ** SEXP R_BufferedMatrix
+ ** SEXP R_col - Columns to access in the matrix
+ ** SEXP value - store Numeric values at specified locations
+ **
+ ** RETURNS TRUE if successful
+ **         FALSE if unsuccessful
+ **
+ ** 
+ **
+ *****************************************************/
+
+SEXP R_bm_setValueColumn(SEXP R_BufferedMatrix, SEXP R_col, SEXP value){
+
+
+  
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i,j;
+  int ncols;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  ncols = length(R_col);
+    
+  PROTECT(returnvalue=allocVector(LGLSXP,1));
+
+  if (Matrix == NULL){ 
+    LOGICAL(returnvalue)[0] = FALSE;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+
+	  
+  if(!dbm_setValueColumn(Matrix, INTEGER(R_col), REAL(value), ncols)){ 
+    LOGICAL(returnvalue)[0] = FALSE;
+    UNPROTECT(1);
+    return returnvalue;
+  } 
+
+
+  LOGICAL(returnvalue)[0] = TRUE;
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
+
+
+
+
+SEXP R_bm_setValueRow(SEXP R_BufferedMatrix, SEXP R_row, SEXP value){
+
+
+  
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i,j;
+  int nrows;
+  double *tempbuffer;
+    
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  nrows = length(R_row);
+    
+  PROTECT(returnvalue=allocVector(LGLSXP,1));
+
+  if (Matrix == NULL){ 
+    LOGICAL(returnvalue)[0] = FALSE;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+
+  
+  if(!dbm_setValueRow(Matrix, INTEGER(R_row), REAL(value),nrows)){
+    LOGICAL(returnvalue)[0] = FALSE;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+
+  LOGICAL(returnvalue)[0] = TRUE;
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
+
+SEXP R_bm_setValueSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col, SEXP value){
+
+
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i,j;
+  int nrows,ncols;
+
+  
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  nrows = length(R_row);
+  ncols = length(R_col);
+  
+  PROTECT(returnvalue=allocVector(LGLSXP,1));
+  if (Matrix == NULL){ 
+    LOGICAL(returnvalue)[0] = FALSE;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+
+
+  for (j=0; j < ncols; j++){
+    for (i = 0; i < nrows; i++){
+      if(!dbm_setValue(Matrix,INTEGER(R_row)[i],  INTEGER(R_col)[j], REAL(value)[j*nrows + i])){
+	
+	LOGICAL(returnvalue)[0] = FALSE;
+	UNPROTECT(1);
+	return returnvalue;
+      }
+    }
+  }
+
+
+  
+  LOGICAL(returnvalue)[0] = TRUE;
+  UNPROTECT(1);
+  return returnvalue;
+
 
 }

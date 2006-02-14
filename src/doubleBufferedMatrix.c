@@ -13,6 +13,10 @@
  **  History
  **  Jan 31, 2006 - Initial version
  **  Feb 2, 2006 - Fix slight logic error bug in BufferResize
+ **  Feb 7, 2006 - functionality for getting a column at a time
+ **                either to access it or write to it. Same for
+ **                rows. Neither has been written optimally
+ **                yet
  **
  *****************************************************/
 
@@ -45,7 +49,8 @@
  **            two buffers 
  **               - small row buffer - this is the primary buffer when 
  **                          in row mode it contains a contiguous set of rows
- **			     across all columns 
+ **			     across all columns (ie if you are dealing with adjacent rows
+ **                          the code will not have to go to file so often)
  **               - larger column buffer - secondary buffer in row mode
  **                          it contains all the data for a 
  **                          relatively small number of columns
@@ -728,7 +733,9 @@ double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col){
  ** The following are functions that should be considered
  ** exposed to the real world. Ie the constitute the 
  ** API that might be used by others.
- ** Every thing above this point is internal.
+ ** Every thing above this point is internal, subject to
+ ** be changed and not to be called except from within
+ ** the routines below.
  ** 
  **
  **
@@ -739,14 +746,18 @@ double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col){
 
 /*****************************************************
  **
- ** int dbm_alloc(doubleBufferedMatrix *Matrix,int max_rows,int max_cols,char *prefix, char *directory)
+ ** doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,char *prefix, char *directory)
  **
- ** doubleBufferedMatrix *Matrix - on exit will point to an allocated
- **                                doubleBufferedMatrix
  ** int max_rows - maximum number of rows that can be stored in the row buffer (if it is activated)
  ** int max_cols - maximum number of columns that can be stored in the column buffer
  ** char *prefix - character string to use for start of filename for temporary files. 
  ** char *directory - character string for 
+ **
+ ** 
+ ** RETURNS an allocated empty doubleBufferedMatrix. Note that this routine
+ **         does not actually allocate the space for the data that is stored.
+ **         This is done by the AddColumn routine.
+ **                               
  **
  *****************************************************/
 
@@ -797,6 +808,15 @@ doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,char *prefix, char *dir
 
 }
 
+/*****************************************************
+ **
+ ** int dbm_free(doubleBufferedMatrix Matrix)
+ ** 
+ ** doubleBufferedMatrix *Matrix 
+ ** 
+ ** Deallocates all allocated space and deletes temporary files
+ **
+ *****************************************************/
 
 int dbm_free(doubleBufferedMatrix Matrix){
   
@@ -850,9 +870,13 @@ int dbm_free(doubleBufferedMatrix Matrix){
  **
  ** int dbm_setRows(doubleBufferedMatrix Matrix, int Rows)
  **
+ ** doubleBufferedMatrix Matrix
+ ** int Rows - number of rows in each column of the matrix
+ ** 
  ** returns 1 if successful, 0 otherwise
  **
- **
+ ** Note that this function sets the number of rows in
+ ** the matrix. Once set the number of rows can not be altered.
  **
  *****************************************************/
 
@@ -874,6 +898,23 @@ int dbm_setRows(doubleBufferedMatrix Matrix, int Rows){
   return 1;
 
 }
+
+/*****************************************************
+ **
+ ** int dbm_AddColumn(doubleBufferedMatrix Matrix)
+ ** 
+ ** doubleBufferedMatrix Matrix
+ **
+ ** Adds an additional column to the matrix at edge of 
+ ** Matrix. Note this entails creating an additional 
+ ** temporary file. Note also that the number of rows 
+ ** in the matrix should have already been set by 
+ ** Previously calling dbm_setRows().
+ **
+ ** RETURNS 0 is successful and 1 if problem
+ **
+ *****************************************************/
+
 
 int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
@@ -1013,10 +1054,25 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
   fwrite(Matrix->coldata[which_col_num],sizeof(double),  Matrix->rows, myfile);
   fclose(myfile);
   Matrix->cols++;
+
+  return 0;
   
 }
 
-
+/*****************************************************
+ **
+ ** int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol)
+ **
+ ** doubleBufferedMatrix Matrix
+ ** int new_maxcol - the number of columns that should be stored in the column buffer
+ **                  upon exit from this routine.
+ **
+ ** This function deals with the mechanics of loading new data in or emptying
+ ** data out of the the column buffer depending on whether the size of the
+ ** column buffer is to be increased or decreased.
+ ** 
+ **
+ *****************************************************/
 
 int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
 
@@ -1148,6 +1204,21 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
 
 }
 
+/*****************************************************
+ **
+ ** int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow)
+ **
+ ** doubleBufferedMatrix Matrix
+ ** int new_maxrow - the number of rows that should be stored in the row buffer
+ **                  upon exit from this routine (or at least the number possible
+ **                  if thw row buffer was active, if in column mode)
+ **
+ **
+ ** Returns 0 if successful, 1 if problem.
+ **
+ *****************************************************/
+
+
 
 int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
 
@@ -1203,7 +1274,7 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
     // Empty out row buffer (at least resync with files)
     dbm_FlushRowBuffer(Matrix);
 
-    // Allocate Space
+    // Allocate Spaceint new_maxcol
     
     for (j =0; j < Matrix->cols; j++){ 
       tmpptr = Matrix->rowdata[j];
@@ -1227,6 +1298,22 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
 
 }
 
+
+
+/*****************************************************
+ **
+ ** int dbm_ResizeBuffer(doubleBufferedMatrix Matrix, int new_maxrow,int new_maxcol)
+ **
+ ** doubleBufferedMatrix Matrix
+ ** int new_maxrow - the number of rows that should be stored in the row buffer
+ ** int new_maxrow - the number of rows that should be stored in the row buffer
+ **                  upon exit from this routine (or at least the number possible
+ **                  if thw row buffer was active, if in column mode)
+ **
+ **
+ **
+ **
+ *****************************************************/
 
 int dbm_ResizeBuffer(doubleBufferedMatrix Matrix, int new_maxrow, int new_maxcol){
 
@@ -1635,10 +1722,149 @@ int dbm_getBufferRows(doubleBufferedMatrix Matrix){
 
 
 
+/******************************************************
+ **
+ ** int dbm_getColumnValue(doubleBufferedMatrix Matrix, int *cols, double *value, int ncol)
+ **
+ ** doubleBufferedMatrix Matrix
+ ** int *col - locations in matrix
+ ** double *value - location to store value found in matrix (should have enough
+ **                 space for rows worth of doubles).
+ ** int ncol - number of columns
+ **
+ ** Returns 1 if get was successful. Otherwise returns 0 and *value is unchanged.
+ **
+ **
+ ******************************************************/
+
+int dbm_getValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, int ncols){
+
+  double *tmp;
+  int i,j;
+
+
+  for (j=0; j < ncols; j++){
+    if ((cols[j] >= Matrix->cols) || (cols[j] < 0)){
+      return 0;
+    }
+  }
+
+
+  for (j= 0; j < ncols; j++){
+    for (i =0; i < Matrix->rows; i++){
+      tmp = dbm_internalgetValue(Matrix,i,cols[j]);
+      value[j*Matrix->rows+ i] = *tmp; 
+      Matrix->rowcolclash = 0; /* we are not setting anything here */
+    }
+  }
+  
+  return 1;
+}
+
+
+
+
+int dbm_getValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int nrows){
+
+  double *tmp;
+  int i,j;
+
+  for (i =0; i < nrows; i++){
+    if ((rows[i] >= Matrix->rows) || (rows[i] < 0)){
+      return 0;
+    }
+  }
+
+  if (Matrix->colmode){
+    for (j =0; j < Matrix->cols; j++){
+      for (i =0; i < nrows; i++){
+	tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	value[j*nrows + i] = *tmp; 
+	Matrix->rowcolclash = 0; /* we are not setting anything here */
+      }
+    }
+  } else {
+    for (i =0; i < nrows; i++){
+      for (j =0; j < Matrix->cols; j++){
+	tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	value[j*nrows + i] = *tmp; 
+	Matrix->rowcolclash = 0; /* we are not setting anything here */
+      }
+    }
+  }
+
+
+  
+  return 1;
+}
+
+
+
+
+int dbm_setValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, int ncols){
+
+  double *tmp;
+  int i,j;
+  
+  if (Matrix->readonly){
+    return 0; /* not successful */
+
+  }
+  
+  for (j =0; j < ncols; j++){
+    if ((cols[j] >= Matrix->cols) || (cols[j] < 0)){
+      return 0;
+    }
+  }
+
+  for (j=0; j < ncols; j++){
+    for (i =0; i < Matrix->rows; i++){
+      tmp = dbm_internalgetValue(Matrix,i,cols[j]);
+      *tmp = value[j*Matrix->rows + i];
+    }
+  }
+  
+
+  return 1;
+}
 
 
 
 
 
 
+int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int nrows){
 
+  double *tmp;
+  int i,j;
+  
+  if (Matrix->readonly){
+    return 0; /* not successful */
+
+  }
+  
+  for (i =0; i < nrows; i++){
+    if ((rows[i] >= Matrix->rows) || (rows[i] < 0)){
+      return 0;
+    }
+  }
+
+
+  if (Matrix->colmode){
+    for (j =0; j < Matrix->cols; j++){  
+      for (i =0; i < nrows; i++){
+	tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	*tmp = value[j*nrows + i];
+      }
+    }
+  } else {
+    for (i =0; i < nrows; i++){
+      for (j =0; j < Matrix->cols; j++){
+	tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	*tmp = value[j*nrows + i];
+      }
+    }
+  }
+  
+  return 1;
+}

@@ -48,7 +48,7 @@ setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
       }
 
       if ((i > 0) & (j >0)){
-        return(.Call("R_bm_getValue",x@rawBufferedMatrix,i-1,j-1))
+        return(.Call("R_bm_getValue",x@rawBufferedMatrix,as.integer(i-1),as.integer(j-1),PACKAGE="BufferedMatrix"))
       } else {
         ## at least one of i and j is negative
         ##
@@ -170,7 +170,7 @@ setReplaceMethod("[", "BufferedMatrix", function(x, i, j,..., value){
       }
       if (i > 0 & j > 0){
         value <- rep(value,recycle.how.many.columns(value,1,1))
-        .Call("R_bm_setValue",x@rawBufferedMatrix,i-1,j-1,value)
+        .Call("R_bm_setValue",x@rawBufferedMatrix,as.integer(i-1),as.integer(j-1),value,PACKAGE="BufferedMatrix")
       } else {
         indices.row <- (1:dim.x[1])[i]
         indices.col <- (1:dim.x[2])[j]

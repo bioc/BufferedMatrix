@@ -41,4 +41,5 @@ int dbm_getCols(doubleBufferedMatrix Matrix);  /* returns how many cols are curr
 int dbm_getBufferCols(doubleBufferedMatrix Matrix);  /* returns how many columns are currently in the column buffer */
 int dbm_getBufferRows(doubleBufferedMatrix Matrix);  /* returns how many rows are currently in the row buffer */
 
+int dbm_getValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, int ncol);
 #endif

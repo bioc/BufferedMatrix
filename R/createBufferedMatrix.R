@@ -15,14 +15,14 @@ createBufferedMatrix <- function(rows, cols=0, bufferrows=1, buffercols=1,prefix
   
   tmp.externpointer<- .Call("R_bm_Create",prefix,directory,bufferrows,buffercols, PACKAGE="BufferedMatrix")
   
-  .Call("R_bm_setRows",tmp.externpointer,rows)
+  .Call("R_bm_setRows",tmp.externpointer,rows, PACKAGE="BufferedMatrix")
 
   if (cols > 0){
     for (i in 1:cols){
-      .Call("R_bm_AddColumn",tmp.externpointer)
+      .Call("R_bm_AddColumn",tmp.externpointer, PACKAGE="BufferedMatrix")
     }
   }
-  .Call("R_bm_ResizeBuffer",tmp.externpointer,bufferrows,buffercols)
+  .Call("R_bm_ResizeBuffer",tmp.externpointer,bufferrows,buffercols, PACKAGE="BufferedMatrix")
   
   new("BufferedMatrix",rawBufferedMatrix=tmp.externpointer)
 }

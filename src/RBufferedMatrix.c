@@ -12,6 +12,7 @@
  **  Feb 3, 2006 Add Finalizer
  **  Feb 7, 2006 Add functionality for accessing columns or rows at a time
  **              and returning as an R matrix
+ **  Feb 16, 2006 R_bm_getPrefix, R_bm_getDirectory, R_copyValues added
  **
  *****************************************************/
 
@@ -1003,6 +1004,125 @@ SEXP R_bm_setValueSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col, SEXP 
 
 
   
+  LOGICAL(returnvalue)[0] = TRUE;
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
+
+
+SEXP R_bm_getPrefix(SEXP R_BufferedMatrix){
+
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+
+  char *prefix;
+
+  
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+  
+  if (Matrix == NULL){
+    return R_BufferedMatrix;
+  }
+
+
+  prefix = dbm_getPrefix(Matrix);
+
+  PROTECT(returnvalue = allocVector(STRSXP,1));
+
+  SET_VECTOR_ELT(returnvalue,0,mkChar(prefix));
+
+  
+
+
+  Free(prefix);
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+SEXP R_bm_getDirectory(SEXP R_BufferedMatrix){
+
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+
+  char *directory;
+
+  
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+  
+  if (Matrix == NULL){
+    return R_BufferedMatrix;
+  }
+
+
+  directory = dbm_getDirectory(Matrix);
+
+  PROTECT(returnvalue = allocVector(STRSXP,1));
+
+  SET_VECTOR_ELT(returnvalue,0,mkChar(directory));
+
+  
+
+
+  Free(directory);
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+
+
+SEXP R_bm_copyValues(SEXP R_BufferedMatrix_target, SEXP R_BufferedMatrix_source){
+
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix_target;
+  doubleBufferedMatrix Matrix_source;
+
+  char *directory;
+
+  
+  Matrix_target =  R_ExternalPtrAddr(R_BufferedMatrix_target);
+  Matrix_source =  R_ExternalPtrAddr(R_BufferedMatrix_source);
+
+  /* Check the two supplied BufferedMatrices */
+  if (Matrix_target == NULL){
+    error("Non valid BufferedMatrix supplied as target\n");
+  }
+  
+  if (Matrix_source == NULL){
+    error("Non valid BufferedMatrix supplied as source\n");
+  }
+  
+  if ((dbm_getRows(Matrix_source) != dbm_getRows(Matrix_target)) || (dbm_getCols(Matrix_source) != dbm_getCols(Matrix_target))){
+    error("Matrices sizes do not agree. Source dimensions: %d %d Target dimensions: %d %d\n",dbm_getRows(Matrix_source),dbm_getCols(Matrix_source),dbm_getRows(Matrix_target),dbm_getCols(Matrix_target));
+  }
+  
+  
+  PROTECT(returnvalue = allocVector(LGLSXP,1));
+
+  
+  
+  if(!dbm_copyValues(Matrix_target,Matrix_source)){
+    LOGICAL(returnvalue)[0] = FALSE;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+
   LOGICAL(returnvalue)[0] = TRUE;
   UNPROTECT(1);
   return returnvalue;

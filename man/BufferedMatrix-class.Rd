@@ -7,7 +7,9 @@
 \alias{RowMode}
 \alias{is.ColMode}
 \alias{is.RowMode}
-
+\alias{prefix}
+\alias{duplicate}
+\alias{directory}
 
 \alias{dim,BufferedMatrix-method}
 \alias{buffer.dim,BufferedMatrix-method}
@@ -21,6 +23,9 @@
 \alias{is.RowMode,BufferedMatrix-method}
 \alias{ColMode,BufferedMatrix-method}
 \alias{RowMode,BufferedMatrix-method}
+\alias{duplicate,BufferedMatrix-method}
+\alias{prefix,BufferedMatrix-method}
+\alias{directory,BufferedMatrix-method}
 
 
 \title{Class BufferedMatrix}
@@ -73,11 +78,20 @@
     Deactivate the row buffer
   }
 
-  
-
-  
+  \item{duplicate}{\code{signature(object = "BufferedMatrix")}:
+    Make a copy of the BufferedMatrix
   }
+
+  \item{prefix}{\code{signature(object = "BufferedMatrix")}:
+    return the initial part of the string used for temporary files
+  }
+
+  \item{directory}{\code{signature(object = "BufferedMatrix")}:
+    return the location where temporary files are stored
+  }
+    
   
+}
 }
 
 

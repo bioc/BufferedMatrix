@@ -17,6 +17,7 @@
  **                either to access it or write to it. Same for
  **                rows. Neither has been written optimally
  **                yet
+ **  Feb 16, 2006 - make the internal functions "static", dbm_getPrefix, dbm_getDirectory
  **
  *****************************************************/
 
@@ -198,21 +199,21 @@ struct _double_buffered_matrix
  *****************************************************
  *****************************************************/
 
-void dbm_SetClash(doubleBufferedMatrix Matrix,int row, int col);
-void dbm_ClearClash(doubleBufferedMatrix Matrix);
-int dbm_InRowBuffer(doubleBufferedMatrix Matrix,int row, int col);
-int dbm_InColBuffer(doubleBufferedMatrix Matrix,int row, int col,int *which_col_index);
+static void dbm_SetClash(doubleBufferedMatrix Matrix,int row, int col);
+static void dbm_ClearClash(doubleBufferedMatrix Matrix);
+static int dbm_InRowBuffer(doubleBufferedMatrix Matrix,int row, int col);
+static int dbm_InColBuffer(doubleBufferedMatrix Matrix,int row, int col,int *which_col_index);
 
-int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix);
-int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix);
-int dbm_FlushAllColumns(doubleBufferedMatrix Matrix);
+static int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix);
+static int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix);
+static int dbm_FlushAllColumns(doubleBufferedMatrix Matrix);
 
-int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col);
-int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row);
+static int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col);
+static int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row);
 
-int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int where);
+static int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int where);
 
-double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col);
+static double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col);
 
 
 /*****************************************************
@@ -247,7 +248,7 @@ double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col);
  **
  *****************************************************/
 
-void dbm_SetClash(doubleBufferedMatrix Matrix,int row, int col){
+static void dbm_SetClash(doubleBufferedMatrix Matrix,int row, int col){
   Matrix->rowcolclash = 1;
   Matrix->clash_row = row;
   Matrix->clash_col = col;
@@ -264,7 +265,7 @@ void dbm_SetClash(doubleBufferedMatrix Matrix,int row, int col){
  *****************************************************/
 
 
-void dbm_ClearClash(doubleBufferedMatrix Matrix){
+static void dbm_ClearClash(doubleBufferedMatrix Matrix){
 
     // Should mean that row buffer is up to date and column buffer is potentially not
   int curcol,lastcol;
@@ -310,7 +311,7 @@ void dbm_ClearClash(doubleBufferedMatrix Matrix){
  **
  *****************************************************/
 
-int dbm_InRowBuffer(doubleBufferedMatrix Matrix,int row, int col){
+static int dbm_InRowBuffer(doubleBufferedMatrix Matrix,int row, int col){
   if ((Matrix->first_rowdata <= row) && (row < Matrix->first_rowdata +  Matrix->max_rows)){
     return 1;
   } else {
@@ -333,7 +334,7 @@ int dbm_InRowBuffer(doubleBufferedMatrix Matrix,int row, int col){
  **
  *****************************************************/
 
-int dbm_InColBuffer(doubleBufferedMatrix Matrix,int row, int col, int *which_col_index){
+static int dbm_InColBuffer(doubleBufferedMatrix Matrix,int row, int col, int *which_col_index){
   int curcol, lastcol;
 
   if (Matrix->cols < Matrix->max_cols){
@@ -368,7 +369,7 @@ int dbm_InColBuffer(doubleBufferedMatrix Matrix,int row, int col, int *which_col
  *****************************************************/
 
 
-int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix){
+static int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix){
 
 
   int j,k;
@@ -401,7 +402,7 @@ int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix){
  *****************************************************/
 
 
-int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix){
+static int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix){
 
   int j,k;
   const char *mode2 ="rb+";
@@ -438,7 +439,7 @@ int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix){
 
 
 
-int dbm_FlushAllColumns(doubleBufferedMatrix Matrix){
+static int dbm_FlushAllColumns(doubleBufferedMatrix Matrix){
 
 
 
@@ -484,7 +485,7 @@ int dbm_FlushAllColumns(doubleBufferedMatrix Matrix){
  **
  ****************************************************/
 
-int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
+static int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
   
   const char *mode = "rb";
   FILE *myfile;
@@ -540,7 +541,7 @@ int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
 
 
 
-int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row){
+static int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row){
 
 
   const char *mode = "rb";
@@ -612,7 +613,7 @@ int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row){
  *****************************************************/
 
 
-int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int where){
+static int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int where){
   const char *mode = "rb";
   FILE *myfile;
    
@@ -638,7 +639,7 @@ int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int where){
  **
  *****************************************************/
 
-double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col){
+static double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col){
   
   
   int whichcol = col;
@@ -1866,5 +1867,60 @@ int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
     }
   }
   
+  return 1;
+}
+
+
+
+
+
+
+char *dbm_getPrefix(doubleBufferedMatrix Matrix){
+
+  char *returnvalue;
+  int len= strlen(Matrix->fileprefix);
+
+  returnvalue = Calloc(len+1,char);
+
+  strcpy(returnvalue,Matrix->fileprefix);
+
+  return returnvalue;
+}
+
+
+
+char *dbm_getDirectory(doubleBufferedMatrix Matrix){
+
+  char *returnvalue;
+  int len = strlen(Matrix->filedirectory);
+
+  returnvalue = Calloc(len+1,char);
+
+  strcpy(returnvalue,Matrix->filedirectory);
+
+  return returnvalue;
+}
+
+
+
+int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matrix_source){
+
+  int i, j;
+  double *value, *tmp;
+
+
+  if ((Matrix_source->rows != Matrix_target->rows) || (Matrix_source->cols != Matrix_target->cols)){
+    return 0;
+  }
+
+  
+  for (j=0; j < Matrix_source->cols; j++){
+    for (i=0; i < Matrix_source->rows; i++){
+      value = dbm_internalgetValue(Matrix_source,i,j);
+      tmp = dbm_internalgetValue(Matrix_target,i,j);
+      *tmp = *value;
+    }
+  }
+
   return 1;
 }

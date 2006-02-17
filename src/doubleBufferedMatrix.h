@@ -42,4 +42,15 @@ int dbm_getBufferCols(doubleBufferedMatrix Matrix);  /* returns how many columns
 int dbm_getBufferRows(doubleBufferedMatrix Matrix);  /* returns how many rows are currently in the row buffer */
 
 int dbm_getValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, int ncol);
+int dbm_getValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int nrows);
+int dbm_setValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, int ncols);
+int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int nrows);
+
+
+
+char *dbm_getPrefix(doubleBufferedMatrix Matrix);
+char *dbm_getDirectory(doubleBufferedMatrix Matrix);
+
+int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matrix_source);
+
 #endif

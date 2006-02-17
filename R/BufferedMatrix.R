@@ -8,6 +8,7 @@
 ## Feb 3, 2006 - Initial version
 ## Feb 7, 2006 - indexing/subsetting operators for accessing and replacing parts of the matrix
 ## Feb 8, 2006 - show method, nrow, ncol, is.ColMode, is.RowMode, ColMode, RowMode 
+## Feb 16, 2006 - duplicate method, prefix method, directory method
 ##
 
 setClass("BufferedMatrix",
@@ -243,12 +244,15 @@ setMethod("show", "BufferedMatrix", function(object){
   cat("BufferedMatrix object\n")
   cat("Matrix size: ",dim(object),"\n")
   cat("Buffer size: ",buffer.dim(object),"\n")
+  cat("Directory:   ",directory(object),"\n")
+  cat("Prefix:      ",prefix(object),"\n")
   cat("Mode: ");
   if (is.RowMode(object)){
     cat("Row mode\n")
   } else {
     cat("Col mode\n")
   }
+  
   
   
 })
@@ -326,4 +330,81 @@ if(!isGeneric("set.buffer.dim") )
 setMethod("set.buffer.dim", "BufferedMatrix", function(x,rows,cols){
           .Call("R_bm_ResizeBuffer",x@rawBufferedMatrix,rows,cols,PACKAGE="BufferedMatrix")
           })
+
+
+
+if (!isGeneric("prefix"))
+  setGeneric("prefix",function(x)
+             standardGeneric("prefix"))
+
+
+setMethod("prefix","BufferedMatrix",function(x){
+  .Call("R_bm_getPrefix",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
+
+  
+})
+
+
+if (!isGeneric("directory"))
+  setGeneric("directory",function(x)
+             standardGeneric("directory"))
+
+
+setMethod("directory","BufferedMatrix",function(x){
+  .Call("R_bm_getDirectory",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
+
+  
+})
+
+
+
+if(!isGeneric("duplicate") )
+  setGeneric("duplicate", function(x,...)
+             standardGeneric("duplicate"))
+
+
+
+setMethod("duplicate", "BufferedMatrix", function(x,prefix="BM",dir) {
+
+  bufferrows <- buffer.dim(x)[1]
+  buffercols <- buffer.dim(x)[2]
+  rows <- nrow(x)
+  cols <- ncol(x)
+  
+
+  
+  if (missing(dir)){
+    my.directory <- directory(x)
+  } else {
+    my.directory <- dir
+  }
+
+  if (missing(prefix)){
+    my.prefix <- prefix(x)
+  } else {
+    my.prefix <-prefix
+  }
+
+  
+  
+  tmp.externpointer<- .Call("R_bm_Create",my.prefix,my.directory,bufferrows,buffercols, PACKAGE="BufferedMatrix")
+
+  .Call("R_bm_setRows",tmp.externpointer,rows, PACKAGE="BufferedMatrix")
+
+  if (cols > 0){
+    for (i in 1:cols){
+      .Call("R_bm_AddColumn",tmp.externpointer, PACKAGE="BufferedMatrix")
+    }
+  }
+  if(!.Call("R_bm_copyValues",tmp.externpointer, x@rawBufferedMatrix, PACKAGE="BufferedMatrix")){
+    stop("Duplication failed in data copying stage\n");
+  }
+  
+  y <- new("BufferedMatrix",rawBufferedMatrix=tmp.externpointer)
+
+  return(y)
+
+  
+})
+
 

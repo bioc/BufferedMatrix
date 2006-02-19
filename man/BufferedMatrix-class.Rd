@@ -10,6 +10,9 @@
 \alias{prefix}
 \alias{duplicate}
 \alias{directory}
+\alias{ewApply}
+\alias{pow}
+
 
 \alias{dim,BufferedMatrix-method}
 \alias{buffer.dim,BufferedMatrix-method}
@@ -26,7 +29,11 @@
 \alias{duplicate,BufferedMatrix-method}
 \alias{prefix,BufferedMatrix-method}
 \alias{directory,BufferedMatrix-method}
-
+\alias{ewApply,BufferedMatrix-method}
+\alias{exp,BufferedMatrix-method}
+\alias{sqrt,BufferedMatrix-method}
+\alias{pow,BufferedMatrix-method}
+\alias{log,BufferedMatrix-method}
 
 \title{Class BufferedMatrix}
 
@@ -89,7 +96,26 @@
   \item{directory}{\code{signature(object = "BufferedMatrix")}:
     return the location where temporary files are stored
   }
-    
+  \item{ewApply}{\code{signature(object = "BufferedMatrix")}:
+    apply a function elementwise
+  } 
+
+  \item{exp}{\code{signature(object = "BufferedMatrix")}: Compute the
+    exponential elementwise of the matrix
+  }
+  
+  \item{sqrt}{\code{signature(object = "BufferedMatrix")}: Compute the
+    square-root elementwise of the matrix
+  } 
+
+  \item{pow}{\code{signature(object = "BufferedMatrix")}:  Compute
+    $x^{power}$ elementwise of the matrix
+  }
+
+  \item{log}{\code{signature(object = "BufferedMatrix")}:  Compute
+    logarithm elementwise of the matrix
+  }
+
   
 }
 }

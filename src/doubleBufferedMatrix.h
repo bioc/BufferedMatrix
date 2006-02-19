@@ -52,5 +52,6 @@ char *dbm_getPrefix(doubleBufferedMatrix Matrix);
 char *dbm_getDirectory(doubleBufferedMatrix Matrix);
 
 int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matrix_source);
+int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),double *fn_param);
 
 #endif

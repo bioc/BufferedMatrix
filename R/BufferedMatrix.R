@@ -9,7 +9,7 @@
 ## Feb 7, 2006 - indexing/subsetting operators for accessing and replacing parts of the matrix
 ## Feb 8, 2006 - show method, nrow, ncol, is.ColMode, is.RowMode, ColMode, RowMode 
 ## Feb 16, 2006 - duplicate method, prefix method, directory method
-##
+## Feb 17, 2006 - ewApply method
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr"),
@@ -408,3 +408,85 @@ setMethod("duplicate", "BufferedMatrix", function(x,prefix="BM",dir) {
 })
 
 
+
+if(!isGeneric("ewApply") )
+  setGeneric("ewApply", function(x,...)
+             standardGeneric("ewApply"))
+
+
+setMethod("ewApply", "BufferedMatrix", function(x,FUN,...){
+
+  if (missing(FUN)){
+    stop("Must provide function to apply.")
+  }
+
+  FUN <- match.fun(FUN)
+
+
+  fc <- function(x) {
+    x <- FUN(x,...)
+    if (!is.numeric(x)) stop("Need numeric result")
+    as.double(x)
+  }
+  
+  
+  if(!.Call("R_bm_ewApply", x@rawBufferedMatrix,body(fc), new.env(), PACKAGE="BufferedMatrix")){
+    stop("Problem applying function elementwise")
+  }
+  
+  return(x)
+})
+
+
+
+
+
+setMethod("sqrt","BufferedMatrix",function(x){
+
+  
+  return(.Call("R_bm_ewSqrt",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
+  
+
+
+})
+
+
+setMethod("exp","BufferedMatrix",function(x){
+
+  
+  return(.Call("R_bm_ewExp",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
+  
+
+
+})
+
+
+setMethod("log","BufferedMatrix",function(x,base = exp(1)){
+
+
+
+  
+  return(.Call("R_bm_ewLog",x@rawBufferedMatrix,base,PACKAGE="BufferedMatrix"))
+  
+
+
+})
+
+
+
+if(!isGeneric("pow") )
+  setGeneric("pow", function(x,...)
+             standardGeneric("pow"))
+
+
+
+setMethod("pow","BufferedMatrix",function(x,power=1){
+
+
+
+  
+  return(.Call("R_bm_ewPow",x@rawBufferedMatrix,power,PACKAGE="BufferedMatrix"))
+  
+
+
+})

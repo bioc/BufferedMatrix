@@ -13,6 +13,7 @@
  **  Feb 7, 2006 Add functionality for accessing columns or rows at a time
  **              and returning as an R matrix
  **  Feb 16, 2006 R_bm_getPrefix, R_bm_getDirectory, R_copyValues added
+ **  Feb 17, 2006 R_bm_ewApply added, R_bm_ewLog, R_bm_ewPow, R_bm_ewSqrt, R_bm_ewExp added
  **
  *****************************************************/
 
@@ -20,6 +21,8 @@
 
 #include <Rdefines.h>
 #include <Rinternals.h>
+
+#include <math.h>
 
 
 /* Pre-declare the function which deallocated the c part of the BufferedMatrix */
@@ -1129,3 +1132,206 @@ SEXP R_bm_copyValues(SEXP R_BufferedMatrix_target, SEXP R_BufferedMatrix_source)
 
 
 }
+
+
+
+
+static SEXP Rfn_eval(SEXP x, SEXP f, SEXP rho)
+{
+  defineVar(install("x"), x, rho);
+  return(eval(f, rho));
+}
+
+
+
+
+
+
+SEXP R_bm_ewApply(SEXP R_BufferedMatrix, SEXP Rfn, SEXP rho){
+
+
+  SEXP temp;
+  SEXP returnvalue;
+
+  doubleBufferedMatrix Matrix;
+  int i,j;
+
+
+    
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the two supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+
+  
+  PROTECT(temp=allocMatrix(REALSXP,dbm_getRows(Matrix),1));
+  PROTECT(returnvalue = allocVector(LGLSXP,1));
+  
+
+  for (j=0; j < dbm_getCols(Matrix); j++){
+    if(!dbm_getValueColumn(Matrix, &j, REAL(temp),1)){
+      LOGICAL(returnvalue)[0] = FALSE;
+      UNPROTECT(2);
+      return returnvalue;
+    }
+    temp = Rfn_eval(temp,Rfn,rho);
+    if(!dbm_setValueColumn(Matrix, &j, REAL(temp), 1)){ 
+      LOGICAL(returnvalue)[0] = FALSE;
+      UNPROTECT(2);
+      return returnvalue;
+    } 
+    
+  }
+  
+
+
+
+
+  LOGICAL(returnvalue)[0] = TRUE;
+  UNPROTECT(2);
+  return returnvalue;
+
+
+
+
+
+
+
+}
+
+
+
+
+static double bm_log(double x, double *param){  
+  return(log(x)/log(param[0]));
+}
+
+
+static double bm_pow(double x, double *param){
+  return(pow(x,param[0]));
+}
+
+
+static double bm_sqrt(double x, double *param){
+  return(sqrt(x));
+}
+
+
+
+static double bm_exp(double x, double *param){
+  return(exp(x));
+}
+
+
+
+
+SEXP R_bm_ewSqrt(SEXP R_BufferedMatrix){
+  
+  
+  doubleBufferedMatrix Matrix;
+  double *param=0;
+    
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  
+  dbm_ewApply(Matrix,&bm_sqrt,param);
+
+  
+  
+  return R_BufferedMatrix;
+}
+
+
+SEXP R_bm_ewExp(SEXP R_BufferedMatrix){
+  
+  
+  doubleBufferedMatrix Matrix;
+  double *param=0;
+    
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  
+  dbm_ewApply(Matrix,&bm_exp,param);
+
+  
+  
+  return R_BufferedMatrix;
+}
+
+
+
+
+
+
+
+
+
+SEXP R_bm_ewPow(SEXP R_BufferedMatrix,SEXP power){
+  
+  
+  doubleBufferedMatrix Matrix;
+  double param=0;
+    
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  
+  param = REAL(power)[0];
+
+
+  dbm_ewApply(Matrix,&bm_pow,&param);
+
+  
+  
+  return R_BufferedMatrix;
+}
+
+
+SEXP R_bm_ewLog(SEXP R_BufferedMatrix,SEXP base){
+  
+  
+  doubleBufferedMatrix Matrix;
+  double param=0;
+    
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  
+  param = REAL(base)[0];
+
+
+  dbm_ewApply(Matrix,&bm_log,&param);
+
+  
+  
+  return R_BufferedMatrix;
+}
+
+
+
+
+
+
+
+

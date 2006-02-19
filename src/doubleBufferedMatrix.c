@@ -17,7 +17,8 @@
  **                either to access it or write to it. Same for
  **                rows. Neither has been written optimally
  **                yet
- **  Feb 16, 2006 - make the internal functions "static", dbm_getPrefix, dbm_getDirectory
+ **  Feb 16, 2006 - make the internal functions "static", dbm_getPrefix, dbm_getDirectory, dbm_copyValues added
+ **  Feb 17, 2006 - added dbm_ewApply for applying C level functions
  **
  *****************************************************/
 
@@ -1924,3 +1925,32 @@ int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matri
 
   return 1;
 }
+
+
+
+
+int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),double *fn_param){
+
+
+  int i, j;
+  double *value, *tmp;
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      *value = fn(*value,fn_param);
+    }
+  }
+  
+  return 1;
+
+}
+
+  
+
+
+
+
+
+
+  

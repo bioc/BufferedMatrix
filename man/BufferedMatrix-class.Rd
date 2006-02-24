@@ -13,6 +13,21 @@
 \alias{ewApply}
 \alias{pow}
 
+\alias{colMax}
+\alias{colMin}
+\alias{colSd}
+\alias{colVars}
+\alias{Max}
+\alias{Min}
+\alias{Sd}
+\alias{Sum}
+\alias{Var}
+\alias{rowMax}
+\alias{rowMin}
+\alias{rowSd}
+\alias{rowVars}
+
+
 
 \alias{dim,BufferedMatrix-method}
 \alias{buffer.dim,BufferedMatrix-method}
@@ -34,6 +49,26 @@
 \alias{sqrt,BufferedMatrix-method}
 \alias{pow,BufferedMatrix-method}
 \alias{log,BufferedMatrix-method}
+
+\alias{colMax,BufferedMatrix-method}
+\alias{rowMax,BufferedMatrix-method}
+\alias{colMeans,BufferedMatrix-method}
+\alias{rowMeans,BufferedMatrix-method}
+\alias{colMin,BufferedMatrix-method}
+\alias{rowMin,BufferedMatrix-method}
+\alias{colVars,BufferedMatrix-method}
+\alias{rowVars,BufferedMatrix-method}
+\alias{colSd,BufferedMatrix-method}
+\alias{rowSd,BufferedMatrix-method}
+\alias{colSums,BufferedMatrix-method}
+\alias{rowSums,BufferedMatrix-method}
+
+\alias{Max,BufferedMatrix-method}
+\alias{Min,BufferedMatrix-method}
+\alias{Var,BufferedMatrix-method}
+\alias{Sd,BufferedMatrix-method}
+\alias{Sum,BufferedMatrix-method}
+\alias{mean,BufferedMatrix-method}
 
 \title{Class BufferedMatrix}
 
@@ -116,6 +151,79 @@
     logarithm elementwise of the matrix
   }
 
+  \item{colMax}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing maximums by column
+  }
+
+  \item{rowMax}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing maximums by row
+  }
+
+  
+  \item{colMeans}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing means by column
+  }
+  
+  \item{rowMeans}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing means by row
+  }
+
+  \item{colMin}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing minimums by column
+  }
+
+
+  \item{rowMin}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing minimums by row
+  }
+
+  \item{colVars}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing sample variances by column
+  }
+
+  \item{rowVars}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing sample variances by row
+  }
+
+  \item{colSd}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing sample standard deviations by column
+  }
+
+  \item{rowSd}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing sample standard deviations by row
+  }
+
+  \item{colSums}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing sum by column
+  }
+
+  \item{rowSums}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing sum by row
+  }
+ 
+  \item{Max}{\code{signature(object = "BufferedMatrix")}: Returns the
+    maximum of all elements in the matrix
+  }
+  
+  \item{Min}{\code{signature(object = "BufferedMatrix")}: Returns the
+    minimum of all elements in the matrix
+  }
+
+  \item{Var}{\code{signature(object = "BufferedMatrix")}: Returns the
+    sample variance of all elements in the matrix
+  }
+
+  \item{Sd}{\code{signature(object = "BufferedMatrix")}: Returns the
+    sample standard deviations of all elements in the matrix
+  }
+  
+  \item{Sum}{\code{signature(object = "BufferedMatrix")}: Returns the
+    sum of all elements in the matrix
+  }
+
+  \item{mean}{\code{signature(object = "BufferedMatrix")}: Returns the
+    mean of all elements in the matrix
+  }
   
 }
 }

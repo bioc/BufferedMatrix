@@ -19,6 +19,7 @@
  **                yet
  **  Feb 16, 2006 - make the internal functions "static", dbm_getPrefix, dbm_getDirectory, dbm_copyValues added
  **  Feb 17, 2006 - added dbm_ewApply for applying C level functions
+ **  Feb 22, 2006 - add dbm_max etc. also row*, col* where (*=Mean,Sum,Var,Max,Min)
  **
  *****************************************************/
 
@@ -1950,7 +1951,678 @@ int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),doub
 
 
 
+double dbm_max(doubleBufferedMatrix Matrix,int naflag, int *foundfinite){
 
+
+
+  int i, j;
+  double *value;
+  double max;
+  
+  
+  *foundfinite=0;
+
+
+  max = R_NegInf;
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value) && !naflag){
+	max= R_NaReal;
+	break;
+      } 
+      if (max < *value){
+	max=*value;
+	*foundfinite = 1;
+      }
+    }
+  }
+  
+
+  return max;
+}
+
+
+ 
+
+double dbm_min(doubleBufferedMatrix Matrix,int naflag, int *foundfinite){
+
+
+
+  int i, j;
+  double *value;
+  double min;
+  
+  *foundfinite=0;
+  
+  min = R_PosInf;
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value) && !naflag){
+	min= R_NaReal;
+	break;
+      }
+      if (min > *value){
+	min = *value;	
+	*foundfinite = 1;
+      }
+    }
+  }
+  
+
+  return min;
+}
+ 
+
+
+
+double dbm_mean(doubleBufferedMatrix Matrix,int naflag){
+
+
+
+  int i, j;
+  double *value;
+  double mean=0.0;
+  int count=0;
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  mean= R_NaReal;
+	  break;
+	}
+      } else {
+	mean+= *value;
+	count++;
+      }
+    }
+  }
+  
+
+  return mean/(double)(count);
+}
+ 
+
+
+
+double dbm_sum(doubleBufferedMatrix Matrix,int naflag){
+
+
+
+  int i, j;
+  double *value;
+  double sum=0.0;
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  sum= R_NaReal;
+	  break;
+	}
+      } else {
+	sum+= *value;
+      }
+    }
+  }
+  
+
+  return sum;
+}
+ 
+
+double dbm_var(doubleBufferedMatrix Matrix,int naflag){
+
+
+
+  int i, j;
+  double *value;
+  double s2=0.0;
+  double mean = 0.0;
+  long long count=1;
+  int firstnonNAfound =0;
+
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  s2= R_NaReal;
+	  break;
+	}
+      } else {
+	if (firstnonNAfound){ 
+	  count++;
+	  s2 = s2 + (double)(count-1)*(*value - mean)*(*value - mean)/(double)(count);
+	  mean = mean + (*value - mean)/(double)(count);
+	} else {
+	  mean = *dbm_internalgetValue(Matrix,i,j);
+	}
+	firstnonNAfound =1;
+      }
+    }
+  }
+  
+  if (firstnonNAfound){
+    return s2/(double)(count-1);  /* -1 for sample sd and -1 for overcount on last iteration */
+  } else {
+    return R_NaReal;
+  }
+
+
+}
+ 
+
+
+
+
+
+
+
+void dbm_rowMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+  int *counts = Calloc(Matrix->rows,int);
+  int *foundNA = Calloc(Matrix->rows,int);
+
+  
+  
+  for (i=0; i < Matrix->rows; i++){
+    results[i] =0.0;
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  foundNA[i] = 1;
+	}
+      } else {
+	results[i]+=*value;
+	counts[i]+=1;
+      }
+    }
+  }
+
+  for (i=0; i < Matrix->rows; i++){
+    if (foundNA[i]){
+      results[i] = R_NaReal;
+    } else {
+      results[i]/=(double)counts[i];
+    }
+  }
+
+
+  Free(counts);
+  Free(foundNA);
+
+
+}
+
+
+
+
+void dbm_rowSums(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+  int *foundNA = Calloc(Matrix->rows,int);
+  
+  
+  
+  for (i=0; i < Matrix->rows; i++){
+    results[i] =0.0;
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  foundNA[i] = 1;
+	}
+      } else {
+	results[i]+=*value;
+      }
+    }
+  }
+
+  for (i=0; i < Matrix->rows; i++){
+    if (foundNA[i]){
+      results[i] = R_NaReal;
+    } 
+  }
+
+  Free(foundNA);
+
+
+}
+
+
+
+
+void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+  int *foundNA = Calloc(Matrix->cols,int);
+  int *counts = Calloc(Matrix->cols,int);
+  
+  
+  for (j=0; j < Matrix->cols; j++){
+    results[j] =0.0;
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  foundNA[j] = 1;
+	
+	}
+      } else {
+	results[j]+=*value;
+	counts[j]++;
+      }
+    }
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    if (foundNA[j]){
+      results[j] = R_NaReal;
+    } else {
+      results[j]/=(double)counts[j];
+    }
+  }
+
+  Free(foundNA);
+  Free(counts);
+
+}
+
+
+
+
+
+void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+  int *foundNA = Calloc(Matrix->cols,int);
+
+  
+  
+  for (j=0; j < Matrix->cols; j++){
+    results[j] =0.0;
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  foundNA[j] = 1;
+	
+	}
+      } else {
+	results[j]+=*value;
+      }
+    }
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    if (foundNA[j]){
+      results[j] = R_NaReal;
+    } 
+  }
+
+  Free(foundNA);
+
+
+}
+
+void dbm_rowVars(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+  int *counts = Calloc(Matrix->rows,int);
+  int *foundNA = Calloc(Matrix->rows,int);
+  double *means = Calloc(Matrix->rows,double);
+  
+  
+  
+  for (i=0; i < Matrix->rows; i++){
+    means[i] = *dbm_internalgetValue(Matrix,i,0);
+    if (ISNAN(means[i])){
+      foundNA[i]+= 1;
+      means[i] = 0.0; 
+      results[i] =0.0;
+      counts[i] = 1;
+    } else {
+      results[i] =0.0;
+      counts[i] = 2;
+    }
+  }
+
+  for (j=1; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	foundNA[i]+=1;
+      } else {
+	results[i] = results[i] + (double)(counts[i] -1)*(*value - means[i])*(*value - means[i])/(double)(counts[i]);
+	means[i] = means[i] + (*value - means[i])/(double)counts[i];
+	counts[i]++;
+      }
+    }
+  }
+
+  for (i=0; i < Matrix->rows; i++){ 
+    /* Rprintf("found NA: %d  Counts: %d\n",foundNA[i],counts[i]); */
+    if (foundNA[i] == Matrix->cols){
+      results[i] = R_NaReal;
+    } else {
+      if (counts[i] > 2){
+	results[i]/=(double)(counts[i]-2);    /* -1 for sample, -1 for overcount*/
+      } else {
+	results[i] = R_NaReal;
+      }
+    }
+  }
+
+  Free(means);
+  Free(counts);
+  Free(foundNA);
+}
+
+
+void dbm_colVars(doubleBufferedMatrix Matrix,int naflag,double *results){
+  int i,j;
+  double *value;
+  int *foundNA = Calloc(Matrix->cols,int);
+  int *counts = Calloc(Matrix->cols,int);
+  double *means = Calloc(Matrix->cols,double);
+  
+  for (j=0; j < Matrix->cols; j++){
+
+    means[j] = *dbm_internalgetValue(Matrix,0,j); 
+    if (ISNAN(means[j])){ 
+      foundNA[j]+= 1;
+      results[j] = 0.0;
+      means[j] = 0.0;
+      counts[j]=1;
+    } else {
+      results[j] =0.0;
+      counts[j] = 2;
+    }
+    for (i=1; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);  
+      if (ISNAN(*value)){
+	foundNA[j] += 1; 
+      } else {
+	results[j] = results[j] + (double)(counts[j] -1)*(*value - means[j])*(*value - means[j])/(double)(counts[j]);
+	means[j] = means[j] + (*value - means[j])/(double)counts[j];
+	counts[j]++;
+      }
+    }
+  }
+
+  for (j=0; j < Matrix->cols; j++){
+    /* Rprintf("found NA: %d  Counts: %d\n",foundNA[j],counts[j]); */
+    if (foundNA[j] == Matrix->rows){
+      results[j] = R_NaReal;
+    } else {
+      if (counts[j] > 2){
+	results[j]/=(double)(counts[j]-2); /* -1 for sample, -1 for overcounting */ 
+      } else {
+	results[j] = R_NaReal;
+      }
+    }
+  }
+
+  Free(means);
+  Free(foundNA);
+  Free(counts);
+
+
+
+}
+
+
+
+
+
+
+/*********************************************************************
+ **
+ ** void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results)
+ **
+ ** 
+ **
+ ** Find the maximum in each row
+ **
+ ** Special cases
+ ** - all elements in ROW are NA
+ **
+ **
+ *********************************************************************/
+
+void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+
+  int *isNA = Calloc(Matrix->rows,int);
+
+  for (i=0; i < Matrix->rows; i++){
+    results[i] = *dbm_internalgetValue(Matrix,i,0);
+    if (ISNAN(results[i])){
+      if (!naflag){
+	results[i] = R_NaReal;
+      } else {
+	results[i] = R_NegInf;
+      }
+      isNA[i] = 1;
+    }
+  }
+
+  for (j=1; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  results[i] = R_NaReal;
+	}
+      } else {
+	if (results[i] < *value){
+	  results[i]=*value;
+	}
+	if (isNA[i]){
+	  isNA[i] = 0;
+	}
+      }
+    }
+  }
+
+  for (i=0; i < Matrix->rows; i++){
+    if (isNA[i]){
+      results[i]=  R_NaReal;
+    }
+  }
 
 
   
+  Free(isNA);
+  
+}
+
+
+
+
+
+void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results){
+  int i,j;
+  double *value;
+  int isNA=0;
+  
+  for (j=0; j < Matrix->cols; j++){
+    results[j] = *dbm_internalgetValue(Matrix,0,j);
+    if (ISNAN(results[j])){
+      if (!naflag){
+	results[j] = R_NaReal;
+      } else {
+	results[j] = R_NegInf;
+      }
+      isNA =1;
+
+    }
+    for (i=1; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  results[j] = R_NaReal;
+	}
+      } else {
+	if (results[j] < *value){
+	  results[j]=*value;
+	}
+	if (isNA){
+	  isNA = 0;
+	}
+      }
+    }
+    if (isNA){
+      results[j] = R_NaReal;
+    }
+    isNA = 0;
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results){
+
+  int i,j;
+  double *value;
+
+  int *isNA = Calloc(Matrix->rows,int);
+
+  for (i=0; i < Matrix->rows; i++){
+    results[i] = *dbm_internalgetValue(Matrix,i,0);
+    if (ISNAN(results[i])){
+      if (!naflag){
+	results[i] = R_NaReal;
+      } else {
+	results[i] = R_PosInf;
+      }
+      isNA[i] = 1;
+    }
+  }
+
+  for (j=1; j < Matrix->cols; j++){
+    for (i=0; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  results[i] = R_NaReal;
+	}
+      } else {
+	if (results[i] > *value){
+	  results[i]=*value;
+	}
+	if (isNA[i]){
+	  isNA[i] = 0;
+	}
+      }
+    }
+  }
+
+  for (i=0; i < Matrix->rows; i++){
+    if (isNA[i]){
+      results[i]=  R_NaReal;
+    }
+  }
+
+
+  
+  Free(isNA);
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results){
+  int i,j;
+  double *value;
+  int isNA=0;
+  
+  for (j=0; j < Matrix->cols; j++){
+    results[j] = *dbm_internalgetValue(Matrix,0,j);
+    if (ISNAN(results[j])){
+      if (!naflag){
+	results[j] = R_NaReal;
+      } else {
+	results[j] = R_PosInf;
+      }
+      isNA =1;
+
+    }
+    for (i=1; i < Matrix->rows; i++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  results[j] = R_NaReal;
+	}
+      } else {
+	if (results[j] > *value){
+	  results[j]=*value;
+	}
+	if (isNA){
+	  isNA = 0;
+	}
+      }
+    }
+    if (isNA){
+      results[j] = R_NaReal;
+    }
+    isNA = 0;
+  }
+  
+}
+
+
+
+
+
+

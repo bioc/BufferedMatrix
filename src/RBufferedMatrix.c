@@ -14,6 +14,7 @@
  **              and returning as an R matrix
  **  Feb 16, 2006 R_bm_getPrefix, R_bm_getDirectory, R_copyValues added
  **  Feb 17, 2006 R_bm_ewApply added, R_bm_ewLog, R_bm_ewPow, R_bm_ewSqrt, R_bm_ewExp added
+ **  Feb 22, 2006 R_bm_max, R_bm_min, R_bm_sum, R_bm_var, R_bm_mean, R_bm_ColSums, R_bm_ColMeans, R_bm_RowMeans,  R_bm_RowSums
  **
  *****************************************************/
 
@@ -1334,4 +1335,423 @@ SEXP R_bm_ewLog(SEXP R_BufferedMatrix,SEXP base){
 
 
 
+SEXP R_bm_max(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+  int foundfinite;
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,1));
+  NAflag = LOGICAL(removeNA)[0];
+
+  REAL(returnvalue)[0] = dbm_max(Matrix,NAflag,&foundfinite);
+
+  if (!foundfinite && NAflag){
+    warning("No finite arguments to max; returning -Inf");
+  }
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+SEXP R_bm_min(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+  int foundfinite;
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,1));
+  NAflag = LOGICAL(removeNA)[0];
+
+  REAL(returnvalue)[0] = dbm_min(Matrix,NAflag, &foundfinite);
+
+  if (!foundfinite && NAflag){
+    warning("No finite arguments to Min; returning Inf");
+  }
+    
+
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_mean(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,1));
+  NAflag = LOGICAL(removeNA)[0];
+
+  REAL(returnvalue)[0] = dbm_mean(Matrix,NAflag);
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+SEXP R_bm_sum(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,1));
+  NAflag = LOGICAL(removeNA)[0];
+
+  REAL(returnvalue)[0] = dbm_sum(Matrix,NAflag);
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+SEXP R_bm_var(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,1));
+  NAflag = LOGICAL(removeNA)[0];
+
+  REAL(returnvalue)[0] = dbm_var(Matrix,NAflag);
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+
+
+
+SEXP R_bm_rowMeans(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getRows(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_rowMeans(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+
+SEXP R_bm_rowSums(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getRows(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_rowSums(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+SEXP R_bm_rowVars(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getRows(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_rowVars(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+SEXP R_bm_rowMax(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getRows(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_rowMax(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_rowMin(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getRows(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_rowMin(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_colMeans(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_colMeans(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_colSums(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_colSums(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_colVars(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_colVars(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_colMax(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_colMax(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+SEXP R_bm_colMin(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_colMin(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
 

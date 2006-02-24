@@ -54,4 +54,25 @@ char *dbm_getDirectory(doubleBufferedMatrix Matrix);
 int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matrix_source);
 int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),double *fn_param);
 
+double dbm_max(doubleBufferedMatrix Matrix,int naflag,int *foundfinite);
+double dbm_min(doubleBufferedMatrix Matrix,int naflag,int *foundfinite);
+double dbm_mean(doubleBufferedMatrix Matrix,int naflag);
+double dbm_sum(doubleBufferedMatrix Matrix,int naflag);
+double dbm_var(doubleBufferedMatrix Matrix,int naflag);
+
+
+void dbm_rowMeans(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_rowSums(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_rowVars(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results);
+
+
+void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_colVars(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results);
+
+
 #endif

@@ -10,6 +10,8 @@
 ## Feb 8, 2006 - show method, nrow, ncol, is.ColMode, is.RowMode, ColMode, RowMode 
 ## Feb 16, 2006 - duplicate method, prefix method, directory method
 ## Feb 17, 2006 - ewApply method
+## Feb 22, 2006 - add Max, Min, mean, Sd, Var methods. Also rowMeans,rowSums,colMeans,colSums
+## Feb 23, 2006 - added rowVar, rowSd, colVar, colSd, rowMax, colMax, rowMin, colMin methods
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr"),
@@ -487,6 +489,240 @@ setMethod("pow","BufferedMatrix",function(x,power=1){
   
   return(.Call("R_bm_ewPow",x@rawBufferedMatrix,power,PACKAGE="BufferedMatrix"))
   
+
+
+})
+
+
+
+if(!isGeneric("Max") )
+  setGeneric("Max", function(x,...)
+             standardGeneric("Max"))
+
+
+
+setMethod("Max", signature("BufferedMatrix","logical"), function(x,na.rm=FALSE){
+  return(.Call("R_bm_max",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+})
+
+
+
+
+if(!isGeneric("Min") )
+  setGeneric("Min", function(x,...)
+             standardGeneric("Min"))
+
+
+setMethod("Min", "BufferedMatrix", function(x,na.rm=FALSE){
+  return(.Call("R_bm_min",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+})
+
+
+setMethod("mean", "BufferedMatrix", function(x,na.rm=FALSE){
+  return(.Call("R_bm_mean",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+})
+
+
+if(!isGeneric("Sum") )
+  setGeneric("Sum", function(x,...)
+             standardGeneric("Sum"))
+
+
+setMethod("Sum","BufferedMatrix", function(x,na.rm=FALSE){
+  return(.Call("R_bm_sum",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+})
+
+
+if(!isGeneric("Var") )
+  setGeneric("Var", function(x,...)
+             standardGeneric("Var"))
+
+
+setMethod("Var", "BufferedMatrix", function(x,na.rm=FALSE){
+  return(.Call("R_bm_var",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+})
+
+
+if(!isGeneric("Sd") )
+  setGeneric("Sd", function(x,...)
+             standardGeneric("Sd"))
+
+
+setMethod("Sd", "BufferedMatrix", function(x,na.rm=FALSE){
+  sqrt(Var(x,na.rm))
+})
+
+
+
+
+if(!isGeneric("rowMeans") )
+  setGeneric("rowMeans", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("rowMeans"))
+
+setMethod("rowMeans","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_rowMeans",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+})
+
+
+
+if(!isGeneric("rowSums") )
+  setGeneric("rowSums", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("rowSums"))
+
+
+
+setMethod("rowSums","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_rowSums",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+})
+
+
+if(!isGeneric("rowVars") )
+  setGeneric("rowVars", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("rowVars"))
+
+
+setMethod("rowVars","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_rowVars",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+})
+
+if(!isGeneric("rowSd") )
+  setGeneric("rowSd", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("rowSd"))
+
+
+setMethod("rowSd","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(sqrt(rowVars(x,na.rm,dims)))
+
+
+})
+
+
+
+if(!isGeneric("rowMax") )
+  setGeneric("rowMax", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("rowMax"))
+
+
+setMethod("rowMax","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_rowMax",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+
+})
+
+
+
+
+if(!isGeneric("rowMin") )
+  setGeneric("rowMin", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("rowMin"))
+
+
+setMethod("rowMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_rowMin",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+
+})
+
+
+
+
+if(!isGeneric("colMeans") )
+  setGeneric("colMeans", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("colMeans"))
+
+setMethod("colMeans","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_colMeans",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+})
+
+
+
+
+
+if(!isGeneric("colSums") )
+  setGeneric("colSums", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("colSums"))
+
+
+
+setMethod("colSums","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_colSums",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+})
+
+
+if(!isGeneric("colVars") )
+  setGeneric("colVars", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("colVars"))
+
+
+setMethod("colVars","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_colVars",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+})
+
+
+if(!isGeneric("colSd") )
+  setGeneric("colSd", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("colSd"))
+
+
+setMethod("colSd","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(sqrt(colVars(x,na.rm,dims)))
+
+
+})
+
+
+
+
+if(!isGeneric("colMax") )
+  setGeneric("colMax", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("colMax"))
+
+
+setMethod("colMax","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_colMax",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+
+})
+
+
+
+
+
+if(!isGeneric("colMin") )
+  setGeneric("colMin", function(x,na.rm = FALSE, dims = 1)
+             standardGeneric("colMin"))
+
+
+setMethod("colMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
+
+  return(.Call("R_bm_colMin",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
 
 
 })

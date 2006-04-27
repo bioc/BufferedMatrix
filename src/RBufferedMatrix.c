@@ -15,6 +15,7 @@
  **  Feb 16, 2006 R_bm_getPrefix, R_bm_getDirectory, R_copyValues added
  **  Feb 17, 2006 R_bm_ewApply added, R_bm_ewLog, R_bm_ewPow, R_bm_ewSqrt, R_bm_ewExp added
  **  Feb 22, 2006 R_bm_max, R_bm_min, R_bm_sum, R_bm_var, R_bm_mean, R_bm_ColSums, R_bm_ColMeans, R_bm_RowMeans,  R_bm_RowSums
+ **  Apr 26-27, 2006 R_bm_rowApply, R_bm_colApply, R_bm_as_matrix
  **
  *****************************************************/
 
@@ -1755,3 +1756,238 @@ SEXP R_bm_colMin(SEXP R_BufferedMatrix,SEXP removeNA){
 
 }
 
+
+
+
+SEXP R_bm_colApply(SEXP R_BufferedMatrix, SEXP return_dim, SEXP Rfn, SEXP rho){
+
+
+  SEXP temp,temp2;
+  SEXP buffsize;
+  SEXP returnlist;
+  SEXP returnvalue;
+  SEXP result;
+
+  doubleBufferedMatrix Matrix;
+  int i,j;
+
+
+  
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the two supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+
+  
+  PROTECT(temp=allocMatrix(REALSXP,dbm_getRows(Matrix),1));
+  PROTECT(returnvalue = allocVector(LGLSXP,1));
+  PROTECT(returnlist = allocVector(VECSXP,2));
+  
+  SET_VECTOR_ELT(returnlist,0,returnvalue);
+
+
+
+  if (INTEGER(return_dim)[0] == 1){
+    PROTECT(result = allocVector(VECSXP,dbm_getCols(Matrix)));
+  } else {
+    PROTECT(buffsize=allocVector(INTSXP,1));
+    INTEGER(buffsize)[0] = 1; //dbm_getCols(Matrix);
+    
+    PROTECT(result = R_bm_Create(R_bm_getPrefix(R_BufferedMatrix),
+				 R_bm_getDirectory(R_BufferedMatrix),
+				 buffsize,
+				 buffsize
+				 ));
+
+    R_bm_setRows(result,return_dim);
+
+    for (j=0; j < dbm_getCols(Matrix); j++){
+      R_bm_AddColumn(result);
+    }
+
+
+  }
+  
+  SET_VECTOR_ELT(returnlist,1,result);
+
+  for (j=0; j < dbm_getCols(Matrix); j++){
+    if(!dbm_getValueColumn(Matrix, &j, REAL(temp),1)){
+      LOGICAL(returnvalue)[0] = FALSE;
+      UNPROTECT(5);
+      return returnvalue;
+    }
+    if (INTEGER(return_dim)[0] ==1){
+      SET_VECTOR_ELT(result,j,Rfn_eval(temp,Rfn,rho));
+    } else {
+      
+      PROTECT(temp2 = Rfn_eval(temp,Rfn,rho));
+
+      dbm_setValueColumn(R_ExternalPtrAddr(result), &j, REAL(temp2),1);
+      UNPROTECT(1);
+
+    }
+  }
+  
+
+
+
+  LOGICAL(returnvalue)[0] = TRUE;
+
+  if (INTEGER(return_dim)[0] ==1){
+    UNPROTECT(4);
+  } else {
+    UNPROTECT(5);
+  }
+  return returnlist;
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+SEXP R_bm_rowApply(SEXP R_BufferedMatrix, SEXP return_dim, SEXP Rfn, SEXP rho){
+
+
+  SEXP temp,temp2;
+  SEXP buffsize;
+  SEXP returnlist;
+  SEXP returnvalue;
+  SEXP result;
+
+  doubleBufferedMatrix Matrix;
+  int i,j;
+
+
+  
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the two supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+
+  
+  PROTECT(temp=allocMatrix(REALSXP,dbm_getCols(Matrix),1));
+  PROTECT(returnvalue = allocVector(LGLSXP,1));
+  PROTECT(returnlist = allocVector(VECSXP,2));
+  
+  SET_VECTOR_ELT(returnlist,0,returnvalue);
+
+
+
+  if (INTEGER(return_dim)[0] == 1){
+    PROTECT(result = allocVector(VECSXP,dbm_getRows(Matrix)));
+  } else {
+    PROTECT(buffsize=allocVector(INTSXP,1));
+    INTEGER(buffsize)[0] = 1; //dbm_getCols(Matrix);
+    
+    PROTECT(result = R_bm_Create(R_bm_getPrefix(R_BufferedMatrix),
+				 R_bm_getDirectory(R_BufferedMatrix),
+				 buffsize,
+				 buffsize
+				 ));
+
+    R_bm_setRows(result,return_dim);
+
+    for (i=0; i < dbm_getRows(Matrix); i++){
+      R_bm_AddColumn(result);
+    }
+
+
+  }
+  
+  SET_VECTOR_ELT(returnlist,1,result);
+
+  for (i=0; i < dbm_getRows(Matrix); i++){
+    if(!dbm_getValueRow(Matrix, &i, REAL(temp),1)){
+      LOGICAL(returnvalue)[0] = FALSE;
+      UNPROTECT(5);
+      return returnvalue;
+    }
+    if (INTEGER(return_dim)[0] ==1){
+      SET_VECTOR_ELT(result,i,Rfn_eval(temp,Rfn,rho));
+    } else {
+      
+      PROTECT(temp2 = Rfn_eval(temp,Rfn,rho));
+
+      dbm_setValueColumn(R_ExternalPtrAddr(result), &i, REAL(temp2),1);
+      UNPROTECT(1);
+
+    }
+  }
+  
+
+
+
+  LOGICAL(returnvalue)[0] = TRUE;
+
+  if (INTEGER(return_dim)[0] ==1){
+    UNPROTECT(4);
+  } else {
+    UNPROTECT(5);
+  }
+  return returnlist;
+
+
+
+
+
+
+
+}
+
+
+
+
+
+SEXP R_bm_as_matrix(SEXP R_BufferedMatrix){
+
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+  int rows, cols;
+  int j;
+
+  SEXP RMatrix;
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+
+  /* Check the supplied BufferedMatrices actually allocated */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  rows = dbm_getRows(Matrix);
+  cols = dbm_getCols(Matrix);
+
+
+  PROTECT(RMatrix = allocMatrix(REALSXP,rows,cols));
+
+  for (j=0; j < cols; j++){
+    dbm_getValueColumn(Matrix, &j, &REAL(RMatrix)[j*rows],1);
+  }
+
+
+
+
+  UNPROTECT(1);
+  return RMatrix;
+
+}

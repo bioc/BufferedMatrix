@@ -26,6 +26,8 @@
 \alias{rowMin}
 \alias{rowSd}
 \alias{rowVars}
+\alias{colApply}
+\alias{rowApply}
 
 
 
@@ -70,6 +72,11 @@
 \alias{Sum,BufferedMatrix-method}
 \alias{mean,BufferedMatrix-method}
 
+\alias{rowApply,BufferedMatrix-method}
+\alias{colApply,BufferedMatrix-method}
+
+\alias{as.matrix,BufferedMatrix-method}
+
 \title{Class BufferedMatrix}
 
 \description{This is a class representation of a buffered matrix (of
@@ -95,13 +102,13 @@
   \item{buffer.dim}{\code{signature(object = "BufferedMatrix")}: Returns
     the number of columns and the number of rows to be stored in the
     buffer}
-  \item{set.buffer.dim}{\code{signature((object = "BufferedMatrix")}:
+  \item{set.buffer.dim}{\code{signature(object = "BufferedMatrix")}:
     Set the buffer size or resize it
   }
-  
-  
-  
+
   \item{[}{\code{signature(object = "BufferedMatrix")}: matrix accessor}
+
+
   \item{[<-}{\code{signature(object = "BufferedMatrix")}: matrix
     replacer}
   \item{show}{\code{signature(object = "BufferedMatrix")}: prints basic
@@ -224,9 +231,22 @@
   \item{mean}{\code{signature(object = "BufferedMatrix")}: Returns the
     mean of all elements in the matrix
   }
+
+  \item{colApply}{\code{signature(object = "BufferedMatrix")}:
+    apply a function columnwise. Returns either a vector or BufferedMatrix.
+  } 
+
+  \item{rowApply}{\code{signature(object = "BufferedMatrix")}:
+    apply a function row-wise. Returns either a vector or BufferedMatrix.
+  } 
+
+  \item{as.matrix}{\code{signature(object = "BufferedMatrix")}:
+    coerce BufferedMatrix into a regular R \code{\link{matrix}}
+  }
   
-}
-}
+  }}
+
+
 
 
 \author{B. M. Bolstad \email{bmb@bmbolstad.com}}

@@ -12,6 +12,7 @@
 ## Feb 17, 2006 - ewApply method
 ## Feb 22, 2006 - add Max, Min, mean, Sd, Var methods. Also rowMeans,rowSums,colMeans,colSums
 ## Feb 23, 2006 - added rowVar, rowSd, colVar, colSd, rowMax, colMax, rowMin, colMin methods
+## Apr 26, 2006 - add colApply
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr"),
@@ -431,6 +432,22 @@ setMethod("ewApply", "BufferedMatrix", function(x,FUN,...){
     as.double(x)
   }
   
+
+  check.function.return.length <- function(){
+    if (length(fc(c(1))) != 1){
+      return(FALSE)
+    }
+    if (length(fc(c(1,2,3))) != 3){
+      return(FALSE)
+    }
+    return(TRUE)
+  }
+  
+
+  if (!check.function.return.length()){
+    stop("This function should return a vector of same length as input. Cannot apply elementwise")
+
+  }
   
   if(!.Call("R_bm_ewApply", x@rawBufferedMatrix,body(fc), new.env(), PACKAGE="BufferedMatrix")){
     stop("Problem applying function elementwise")
@@ -724,5 +741,108 @@ setMethod("colMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
   return(.Call("R_bm_colMin",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 
 
+
+})
+
+
+
+
+
+if(!isGeneric("colApply") )
+  setGeneric("colApply", function(x,...)
+             standardGeneric("colApply"))
+
+
+setMethod("colApply", "BufferedMatrix", function(x,FUN,...){
+
+  if (missing(FUN)){
+    stop("Must provide function to apply.")
+  }
+
+  FUN <- match.fun(FUN)
+
+
+  fc <- function(x) {
+    x <- FUN(x,...)
+    if (!is.numeric(x)) stop("Need numeric result")
+    as.double(x)
+  }
+  
+  check.function.return.length <- function(){
+    length(fc(x[,1]))
+  }
+
+  return.dim1 <- check.function.return.length()
+
+  result <- .Call("R_bm_colApply", x@rawBufferedMatrix,return.dim1,body(fc), new.env(), PACKAGE="BufferedMatrix")
+
+  if(!result[[1]]){
+    stop("Problem applying function column wise")
+  }
+  if (return.dim1 ==1){
+    return(do.call("c",result[[2]]))
+  } else {
+    return(new("BufferedMatrix",rawBufferedMatrix=result[[2]]))
+  }
+})
+
+
+
+if(!isGeneric("rowApply") )
+  setGeneric("rowApply", function(x,...)
+             standardGeneric("rowApply"))
+
+
+setMethod("rowApply", "BufferedMatrix", function(x,FUN,...){
+
+  if (missing(FUN)){
+    stop("Must provide function to apply.")
+  }
+
+  FUN <- match.fun(FUN)
+
+
+  fc <- function(x) {
+    x <- FUN(x,...)
+    if (!is.numeric(x)) stop("Need numeric result")
+    as.double(x)
+  }
+  
+  check.function.return.length <- function(){
+    length(fc(x[1,]))
+  }
+
+  return.dim1 <- check.function.return.length()
+
+  result <- .Call("R_bm_rowApply", x@rawBufferedMatrix,return.dim1,body(fc), new.env(), PACKAGE="BufferedMatrix")
+
+  if(!result[[1]]){
+    stop("Problem applying function row wise")
+  }
+  if (return.dim1 ==1){
+    return(do.call("c",result[[2]]))
+  } else {
+    return(new("BufferedMatrix",rawBufferedMatrix=result[[2]]))
+  }
+})
+
+
+
+
+
+
+
+
+if(!isGeneric("as.matrix") )
+  setGeneric("as.matrix", function(x)
+             standardGeneric("as.matrix"))
+
+
+
+setMethod("as.matrix", "BufferedMatrix", function(x){
+  
+  
+  .Call("R_bm_as_matrix", x@rawBufferedMatrix, PACKAGE="BufferedMatrix")
+  
 
 })

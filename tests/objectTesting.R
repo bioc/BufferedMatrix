@@ -509,89 +509,106 @@ colVars(tmp5,na.rm=TRUE)-apply(copymatrix,2,var,na.rm=TRUE)
 ## first when there is no NA
 
 
-for (rep in 1:20){
-  copymatrix <- matrix(rnorm(200,150,15),10,20)
-  
-  tmp5[1:10,1:20] <- copymatrix
-  
-  
-  if(Max(tmp5) != max(copymatrix)){
+
+agree.checks <- function(buff.matrix,r.matrix,err.tol=1e-10){
+
+  if (Max(buff.matrix,na.rm=TRUE) != max(r.matrix,na.rm=TRUE)){
     stop("No agreement in Max")
   }
   
 
-  if(Min(tmp5) != min(copymatrix)){
+  if (Min(buff.matrix,na.rm=TRUE) != min(r.matrix,na.rm=TRUE)){
     stop("No agreement in Min")
   }
 
 
-  if (Sum(tmp5)!= sum(copymatrix)){
+  if (abs(Sum(buff.matrix,na.rm=TRUE)- sum(r.matrix,na.rm=TRUE)) > err.tol){
+
+    cat(Sum(buff.matrix,na.rm=TRUE),"\n")
+    cat(sum(r.matrix,na.rm=TRUE),"\n")
+    cat(Sum(buff.matrix,na.rm=TRUE) - sum(r.matrix,na.rm=TRUE),"\n")
+    
     stop("No agreement in Sum")
   }
   
-  if(mean(tmp5)!= mean(copymatrix)){
+  if (abs(mean(buff.matrix,na.rm=TRUE) - mean(r.matrix,na.rm=TRUE)) > err.tol){
     stop("No agreement in mean")
   }
   
   
-  if(abs(Var(tmp5) - var(as.vector(copymatrix))) > 1e-12){
+  if(abs(Var(buff.matrix,na.rm=TRUE) - var(as.vector(r.matrix),na.rm=TRUE)) > err.tol){
     stop("No agreement in Var")
   }
   
   
 
-  if(any(rowMeans(tmp5) != apply(copymatrix,1,mean))){
+  if(any(abs(rowMeans(buff.matrix,na.rm=TRUE) - apply(r.matrix,1,mean,na.rm=TRUE)) > err.tol,na.rm=TRUE)){
     stop("No agreement in rowMeans")
   }
   
   
-  if(any(colMeans(tmp5) != apply(copymatrix,2,mean))){
+  if(any(abs(colMeans(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,mean,na.rm=TRUE))> err.tol,na.rm=TRUE)){
     stop("No agreement in colMeans")
   }
   
   
-  if(any(rowSums(tmp5) != apply(copymatrix,1,sum))){
+  if(any(abs(rowSums(buff.matrix,na.rm=TRUE)  -  apply(r.matrix,1,sum,na.rm=TRUE))> err.tol,na.rm=TRUE)){
     stop("No agreement in rowSums")
   }
   
   
-  if(any(colSums(tmp5) != apply(copymatrix,2,sum))){
+  if(any(abs(colSums(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,sum,na.rm=TRUE))> err.tol,na.rm=TRUE)){
     stop("No agreement in colSums")
   }
   
   
-  if(any(abs(rowVars(tmp5) - apply(copymatrix,1,var))  > 1e-12)){
+  if(any(abs(rowVars(buff.matrix,na.rm=TRUE) - apply(r.matrix,1,var,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in rowVars")
   }
   
   
-  if(any(abs(colVars(tmp5) - apply(copymatrix,2,var))  > 1e-12)){
+  if(any(abs(colVars(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,var,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in rowVars")
   }
 
 
-  if(any(abs(rowMax(tmp5) - apply(copymatrix,1,max))  > 1e-12)){
+  if(any(abs(rowMax(buff.matrix,na.rm=TRUE) - apply(r.matrix,1,max,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in colMax")
   }
   
 
-  if(any(abs(colMax(tmp5) - apply(copymatrix,2,max))  > 1e-12)){
+  if(any(abs(colMax(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,max,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in colMax")
   }
   
   
   
-  if(any(abs(rowMin(tmp5) - apply(copymatrix,1,min))  > 1e-12)){
+  if(any(abs(rowMin(buff.matrix,na.rm=TRUE) - apply(r.matrix,1,min,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in colMin")
   }
   
 
-  if(any(abs(colMin(tmp5) - apply(copymatrix,2,min))  > 1e-12)){
+  if(any(abs(colMin(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,min,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in colMin")
   }
+}
+
+
+
+
+
+
+
+
+
+for (rep in 1:20){
+  copymatrix <- matrix(rnorm(200,150,15),10,20)
   
+  tmp5[1:10,1:20] <- copymatrix
 
 
+  agree.checks(tmp5,copymatrix)
+  
   ## now lets assign some NA values and check agreement
 
   which.row <- sample(1:10,1,replace=TRUE)
@@ -602,337 +619,34 @@ for (rep in 1:20){
   tmp5[which.row,which.col] <- NA
   copymatrix[which.row,which.col] <- NA
   
-  if(Max(tmp5,na.rm=TRUE) != max(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Max")
-  }
-  
-  
-  if(Min(tmp5,na.rm=TRUE) != min(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Min")
-  }
-  
-  
-  if (Sum(tmp5,na.rm=TRUE)!= sum(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Sum")
-  }
-  
-  if(mean(tmp5,na.rm=TRUE)!= mean(copymatrix,na.rm=TRUE)){
-    stop("No agreement in mean")
-  }
-  
-  
-  if(abs(Var(tmp5,na.rm=TRUE) - var(as.vector(copymatrix),na.rm=TRUE)) > 1e-12){
-    stop("No agreement in Var")
-  }
-  
-  
-  
-  if(any(rowMeans(tmp5,na.rm=TRUE) != apply(copymatrix,1,mean,na.rm=TRUE))){
-    stop("No agreement in rowMeans")
-  }
-  
-  
-  if(any(colMeans(tmp5,na.rm=TRUE) != apply(copymatrix,2,mean,na.rm=TRUE))){
-    stop("No agreement in colMeans")
-  }
-  
-
-  if(any(rowSums(tmp5,na.rm=TRUE) != apply(copymatrix,1,sum,na.rm=TRUE))){
-    stop("No agreement in rowSums")
-  }
-  
-
-  if(any(colSums(tmp5,na.rm=TRUE) != apply(copymatrix,2,sum,na.rm=TRUE))){
-    stop("No agreement in colSums")
-  }
-  
-
-  if(any(abs(rowVars(tmp5,na.rm=TRUE) - apply(copymatrix,1,var,na.rm=TRUE))  > 1e-12)){
-    stop("No agreement in rowVars")
-  }
-  
-  if(any(abs(colVars(tmp5,na.rm=TRUE) - apply(copymatrix,2,var,na.rm=TRUE))  > 1e-12)){
-    stop("No agreement in rowVars")
-  }
-  
-
-  if(any(abs(rowMax(tmp5,na.rm=TRUE) - apply(copymatrix,1,max,na.rm=TRUE))  > 1e-12)){
-    stop("No agreement in colMax")
-  }
-  
-
-  if(any(abs(colMax(tmp5,na.rm=TRUE) - apply(copymatrix,2,max,na.rm=TRUE))  > 1e-12)){
-    stop("No agreement in colMax")
-  }
-  
-
-
-  if(any(abs(rowMin(tmp5,na.rm=TRUE) - apply(copymatrix,1,min,na.rm=TRUE))  > 1e-12)){
-    stop("No agreement in colMin")
-  }
-
-
-  if(any(abs(colMin(tmp5,na.rm=TRUE) - apply(copymatrix,2,min,na.rm=TRUE))  > 1e-12)){
-    stop("No agreement in colMin")
-  }
-
-
-
+  agree.checks(tmp5,copymatrix)
 
   ## make an entire row NA
   tmp5[which.row,] <- NA
   copymatrix[which.row,] <- NA
-  
-  if(Max(tmp5,na.rm=TRUE) != max(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Max")
-  }
-  
-  
-  if(Min(tmp5,na.rm=TRUE) != min(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Min")
-  }
-  
-  
-  if (Sum(tmp5,na.rm=TRUE)!= sum(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Sum")
-  }
-  
-  if(mean(tmp5,na.rm=TRUE)!= mean(copymatrix,na.rm=TRUE)){
-    stop("No agreement in mean")
-  }
-  
-  
-  if(abs(Var(tmp5,na.rm=TRUE) - var(as.vector(copymatrix),na.rm=TRUE)) > 1e-12){
-    stop("No agreement in Var")
-  }
-  
 
 
-  if(any(rowMeans(tmp5,na.rm=TRUE) != apply(copymatrix,1,mean,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in rowMeans")
-  }
+  agree.checks(tmp5,copymatrix)
   
-  
-  if(any(colMeans(tmp5,na.rm=TRUE) != apply(copymatrix,2,mean,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in colMeans")
-  }
-  
-  
-  if(any(rowSums(tmp5,na.rm=TRUE) != apply(copymatrix,1,sum,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in rowSums")
-  }
-  
-  
-  if(any(colSums(tmp5,na.rm=TRUE) != apply(copymatrix,2,sum,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in colSums")
-  }
-  
-  
-  if(any(abs(rowVars(tmp5,na.rm=TRUE) - apply(copymatrix,1,var,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    cat(rowVars(tmp5,na.rm=TRUE),"\n")
-    cat(apply(copymatrix,1,var,na.rm=TRUE),"\n")
-    stop("No agreement in rowVars")
-  }
-  
-  
-  
-  if(any(abs(colVars(tmp5,na.rm=TRUE) - apply(copymatrix,2,var,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    cat(colVars(tmp5,na.rm=TRUE),"\n")
-    cat(apply(copymatrix,2,var,na.rm=TRUE),"\n")
-    stop("No agreement in colVars")
-  }
-  
-  
-  if(any(abs(rowMax(tmp5,na.rm=TRUE) - apply(copymatrix,1,max,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-  
-  if(any(abs(colMax(tmp5,na.rm=TRUE) - apply(copymatrix,2,max,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-
-  
-  
-  if(any(abs(rowMin(tmp5,na.rm=TRUE) - apply(copymatrix,1,min,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-  
-
-  if(any(abs(colMin(tmp5,na.rm=TRUE) - apply(copymatrix,2,min,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-
-
-### also make an entire col NA
+  ### also make an entire col NA
   tmp5[,which.col] <- NA
   copymatrix[,which.col] <- NA
-  
-  
-  if(Max(tmp5,na.rm=TRUE) != max(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Max")
-  }
 
-  
-  if(Min(tmp5,na.rm=TRUE) != min(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Min")
-  }
-  
-  
-  if (Sum(tmp5,na.rm=TRUE)!= sum(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Sum")
-  }
-  
-  if(mean(tmp5,na.rm=TRUE)!= mean(copymatrix,na.rm=TRUE)){
-    stop("No agreement in mean")
-  }
-
-
-  if(abs(Var(tmp5,na.rm=TRUE) - var(as.vector(copymatrix),na.rm=TRUE)) > 1e-12){
-    stop("No agreement in Var")
-  }
-  
-
-
-  if(any(rowMeans(tmp5,na.rm=TRUE) != apply(copymatrix,1,mean,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in rowMeans")
-  }
-  
-
-  if(any(colMeans(tmp5,na.rm=TRUE) != apply(copymatrix,2,mean,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in colMeans")
-  }
-  
-  
-  if(any(rowSums(tmp5,na.rm=TRUE) != apply(copymatrix,1,sum,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in rowSums")
-  }
-  
-
-  if(any(colSums(tmp5,na.rm=TRUE) != apply(copymatrix,2,sum,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in colSums")
-  }
-  
-  
-  if(any(abs(rowVars(tmp5,na.rm=TRUE) - apply(copymatrix,1,var,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-  
-
-
-  if(any(abs(colVars(tmp5,na.rm=TRUE) - apply(copymatrix,2,var,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-  
-
-  if(any(abs(rowMax(tmp5,na.rm=TRUE) - apply(copymatrix,1,max,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-
-  if(any(abs(colMax(tmp5,na.rm=TRUE) - apply(copymatrix,2,max,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-
-
-  if(any(abs(rowMin(tmp5,na.rm=TRUE) - apply(copymatrix,1,min,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-
-
-  if(any(abs(colMin(tmp5,na.rm=TRUE) - apply(copymatrix,2,min,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-
+  agree.checks(tmp5,copymatrix)
 
   ### now make 1 element non NA with NA in the rest of row and column
 
   tmp5[which.row,which.col] <- rnorm(1,150,15)
   copymatrix[which.row,which.col] <- tmp5[which.row,which.col]
 
-
-  if(Max(tmp5,na.rm=TRUE) != max(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Max")
-  }
-
-  
-  if(Min(tmp5,na.rm=TRUE) != min(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Min")
-  }
-  
-  
-  if (Sum(tmp5,na.rm=TRUE)!= sum(copymatrix,na.rm=TRUE)){
-    stop("No agreement in Sum")
-  }
-  
-  if(mean(tmp5,na.rm=TRUE)!= mean(copymatrix,na.rm=TRUE)){
-    stop("No agreement in mean")
-  }
-
-
-  if(abs(Var(tmp5,na.rm=TRUE) - var(as.vector(copymatrix),na.rm=TRUE)) > 1e-12){
-    stop("No agreement in Var")
-  }
-  
-
-
-  if(any(rowMeans(tmp5,na.rm=TRUE) != apply(copymatrix,1,mean,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in rowMeans")
-  }
-  
-
-  if(any(colMeans(tmp5,na.rm=TRUE) != apply(copymatrix,2,mean,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in colMeans")
-  }
-  
-  
-  if(any(rowSums(tmp5,na.rm=TRUE) != apply(copymatrix,1,sum,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in rowSums")
-  }
-  
-
-  if(any(colSums(tmp5,na.rm=TRUE) != apply(copymatrix,2,sum,na.rm=TRUE),na.rm=TRUE)){
-    stop("No agreement in colSums")
-  }
-  
-  
-  if(any(abs(rowVars(tmp5,na.rm=TRUE) - apply(copymatrix,1,var,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-  
-
-
-  if(any(abs(colVars(tmp5,na.rm=TRUE) - apply(copymatrix,2,var,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-  
-
-  if(any(abs(rowMax(tmp5,na.rm=TRUE) - apply(copymatrix,1,max,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-
-  if(any(abs(colMax(tmp5,na.rm=TRUE) - apply(copymatrix,2,max,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-
-
-  if(any(abs(rowMin(tmp5,na.rm=TRUE) - apply(copymatrix,1,min,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-
-
-  if(any(abs(colMin(tmp5,na.rm=TRUE) - apply(copymatrix,2,min,na.rm=TRUE))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-  
+  agree.checks(tmp5,copymatrix)
 }
 
 
 ### now test 1 by n and n by 1 matrix
 
+
+err.tol <- 1e-12
 
 rm(tmp5)
 
@@ -994,162 +708,11 @@ colMin(tmp2)
 
 dataset1 <- matrix(dataset1,1,100)
 
-  
-  if(Max(tmp) != max(dataset1)){
-    stop("No agreement in Max")
-  }
-  
-
-  if(Min(tmp) != min(dataset1)){
-    stop("No agreement in Min")
-  }
-
-
-  if (Sum(tmp)!= sum(dataset1)){
-    stop("No agreement in Sum")
-  }
-  
-  if(mean(tmp)!= mean(dataset1)){
-    stop("No agreement in mean")
-  }
-  
-  
-  if(abs(Var(tmp) - var(as.vector(dataset1))) > 1e-12){
-    stop("No agreement in Var")
-  }
-  
-  
-
-  if(any(rowMeans(tmp) != apply(dataset1,1,mean))){
-    stop("No agreement in rowMeans")
-  }
-  
-  
-  if(any(colMeans(tmp) != apply(dataset1,2,mean))){
-    stop("No agreement in colMeans")
-  }
-  
-  
-  if(any(rowSums(tmp) != apply(dataset1,1,sum))){
-    stop("No agreement in rowSums")
-  }
-  
-  
-  if(any(colSums(tmp) != apply(dataset1,2,sum))){
-    stop("No agreement in colSums")
-  }
-  
-  
-  if(any(abs(rowVars(tmp) - apply(dataset1,1,var))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-  
-  
-  if(any(abs(colVars(tmp) - apply(dataset1,2,var))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-
-
-  if(any(abs(rowMax(tmp) - apply(dataset1,1,max))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-
-  if(any(abs(colMax(tmp) - apply(dataset1,2,max))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-  
-  
-  if(any(abs(rowMin(tmp) - apply(dataset1,1,min))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-  
-
-  if(any(abs(colMin(tmp) - apply(dataset1,2,min))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-  
-
+agree.checks(tmp,dataset1)
 
 dataset2 <- matrix(dataset2,100,1)
+agree.checks(tmp2,dataset2)
   
-if(Max(tmp2) != max(dataset2)){
-  stop("No agreement in Max")
-}
-  
-
-if(Min(tmp2) != min(dataset2)){
-  stop("No agreement in Min")
-}
-
-
-if (Sum(tmp2)!= sum(dataset2)){
-  stop("No agreement in Sum")
-}
-  
-if(mean(tmp2)!= mean(dataset2)){
-  stop("No agreement in mean")
-}
-  
-  
-  if(abs(Var(tmp2) - var(as.vector(dataset2))) > 1e-12){
-    stop("No agreement in Var")
-  }
-  
-  
-
-  if(any(rowMeans(tmp2) != apply(dataset2,1,mean))){
-    stop("No agreement in rowMeans")
-  }
-  
-  
-  if(any(colMeans(tmp2) != apply(dataset2,2,mean))){
-    stop("No agreement in colMeans")
-  }
-  
-  
-  if(any(rowSums(tmp2) != apply(dataset2,1,sum))){
-    stop("No agreement in rowSums")
-  }
-  
-  
-  if(any(colSums(tmp2) != apply(dataset2,2,sum))){
-    stop("No agreement in colSums")
-  }
-  
-  
-  if(any(abs(rowVars(tmp2) - apply(dataset2,1,var))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-  
-  
-  if(any(abs(colVars(tmp2) - apply(dataset2,2,var))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in rowVars")
-  }
-
-
-  if(any(abs(rowMax(tmp2) - apply(dataset2,1,max))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-
-  if(any(abs(colMax(tmp2) - apply(dataset2,2,max))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMax")
-  }
-  
-  
-  
-  if(any(abs(rowMin(tmp2) - apply(dataset2,1,min))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-  
-
-  if(any(abs(colMin(tmp2) - apply(dataset2,2,min))  > 1e-12,na.rm=TRUE)){
-    stop("No agreement in colMin")
-  }
-  
-
 
 tmp <- createBufferedMatrix(10,10)
 
@@ -1171,3 +734,8 @@ rowApply(tmp,rank)[1:5,]
 
 
 as.matrix(tmp)
+
+
+is.BufferedMatrix(tmp)
+
+as.BufferedMatrix(as.matrix(tmp))

@@ -1,1 +1,3 @@
 Apr 26-27, 2006: Improve ewApply. Added colApply and rowApply. Added as.matrix.
+May 27, 2006: Fix problem with signature in definition for method Max. Fix some compiler warnings.
+

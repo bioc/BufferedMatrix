@@ -518,7 +518,7 @@ if(!isGeneric("Max") )
 
 
 
-setMethod("Max", signature("BufferedMatrix","logical"), function(x,na.rm=FALSE){
+setMethod("Max", signature("BufferedMatrix"), function(x,na.rm=FALSE){
   return(.Call("R_bm_max",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 })
 

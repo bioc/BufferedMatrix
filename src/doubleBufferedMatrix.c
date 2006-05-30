@@ -1113,7 +1113,7 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
 
   if (Matrix->max_cols == new_maxcol){
     // No need to do anything.
-    return;
+    return 0;
   } else if (Matrix->max_cols > new_maxcol){
     // Remove columns from the column buffer
     // Will remove max_col - new_maxcol oldest columns
@@ -1161,7 +1161,7 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
       // there are no more columns to add, everything is already in the buffer
       n_cols_add = 0;
       Matrix->max_cols = new_maxcol;
-      return;
+      return 0;
     }
     
     // Figure out which columns to add
@@ -1203,7 +1203,7 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
     Matrix->max_cols = new_maxcol;
   }
 
-
+  return 0;
 
 }
 
@@ -1244,7 +1244,7 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
 
   if (Matrix->colmode){
     Matrix->max_rows =new_maxrow;
-    return;
+    return 0;
   }
 
 
@@ -1255,7 +1255,7 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
 
   if (Matrix->max_rows == new_maxrow){
     // No need to do anything.
-    return;
+    return 0;
   } else if (Matrix->max_rows > new_maxrow){
     // Remove rows from the rows buffer
     // Empty out row buffer (at least resync with files)
@@ -1298,7 +1298,7 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
     
   }
 
-
+  return 0;
 }
 
 

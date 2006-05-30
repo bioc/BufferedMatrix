@@ -16,6 +16,8 @@
  **  Feb 17, 2006 R_bm_ewApply added, R_bm_ewLog, R_bm_ewPow, R_bm_ewSqrt, R_bm_ewExp added
  **  Feb 22, 2006 R_bm_max, R_bm_min, R_bm_sum, R_bm_var, R_bm_mean, R_bm_ColSums, R_bm_ColMeans, R_bm_RowMeans,  R_bm_RowSums
  **  Apr 26-27, 2006 R_bm_rowApply, R_bm_colApply, R_bm_as_matrix
+ **  May 30, 2006 - Add a "tag" to  ExternalPtr with a text name so we can check whether pointer is a BufferedMatrix pointer.
+ **                 Added functionality for checking whether a we have a BufferedMatrix or not
  **
  *****************************************************/
 
@@ -25,6 +27,7 @@
 #include <Rinternals.h>
 
 #include <math.h>
+#include <string.h>
 
 
 /* Pre-declare the function which deallocated the c part of the BufferedMatrix */
@@ -51,7 +54,41 @@ static void R_bm_Finalizer(SEXP R_BufferedMatrix){
 
 }
 
+/*****************************************************
+ **
+ ** static int checkBufferedMatrix(SEXP R_BufferedMatrix)
+ **
+ **
+ ** Checks whether the supplied externalpointer is
+ ** to a BufferedMatrix
+ **
+ *****************************************************/
 
+static int checkBufferedMatrix(SEXP R_BufferedMatrix){
+
+  
+  SEXP tagsxp;
+
+  char truetagname[15] = "RBufferedMatrix";
+
+  char *tagname;
+
+ 
+  tagsxp = R_ExternalPtrTag(R_BufferedMatrix);
+
+  if (!IS_CHARACTER(tagsxp)){
+    return 0;
+  } else {
+    tagname = CHARACTER_POINTER(VECTOR_ELT(tagsxp,0));
+    if (strncmp(truetagname,tagname,15) !=0){
+      return 0;
+    } else {
+      return 1;
+    }
+  }
+ 
+  return 0;
+}
 
 
 /*****************************************************
@@ -81,17 +118,23 @@ SEXP R_bm_Create(SEXP R_prefix, SEXP R_directory, SEXP R_max_rows, SEXP R_max_co
   double max_cols = asReal(R_max_cols);
 
   SEXP val;
+  SEXP tag;
+
 
   doubleBufferedMatrix Matrix;
 
   Matrix = dbm_alloc(max_rows,max_cols,prefix,directory);
 
-  PROTECT(val = R_MakeExternalPtr(Matrix, R_NilValue, R_NilValue));
+  PROTECT(tag = allocVector(STRSXP,1));
+
+  SET_VECTOR_ELT(tag,0,mkChar("RBufferedMatrix"));
+
+  PROTECT(val = R_MakeExternalPtr(Matrix, tag, R_NilValue));
 
   R_RegisterCFinalizerEx(val, (R_CFinalizer_t)R_bm_Finalizer,TRUE);
 
 
-  UNPROTECT(1);
+  UNPROTECT(2);
   return val;
 }
 
@@ -104,10 +147,18 @@ SEXP R_bm_Test_C(SEXP R_BufferedMatrix){
 
   doubleBufferedMatrix Matrix;
 
+  SEXP tempsxp;
+
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
   if (Matrix == NULL){
     return R_BufferedMatrix;
+  }
+
+  tempsxp = R_ExternalPtrTag(R_BufferedMatrix);
+
+  if (IS_CHARACTER(tempsxp)){
+    Rprintf("%s\n",CHARACTER_POINTER(VECTOR_ELT(tempsxp,0)));
   }
 
 
@@ -236,6 +287,10 @@ SEXP R_bm_setRows(SEXP R_BufferedMatrix, SEXP R_rows){
   doubleBufferedMatrix Matrix;
   int rows;
 
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_setRows");
+  }
+
   PROTECT(returnvalue=allocVector(LGLSXP,1));
 
 
@@ -279,7 +334,11 @@ SEXP R_bm_AddColumn(SEXP R_BufferedMatrix){
 
 
   doubleBufferedMatrix Matrix;
-    
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_AddColumn");
+  }
+
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
   if (Matrix == NULL){
@@ -312,7 +371,10 @@ SEXP R_bm_ResizeBuffer(SEXP R_BufferedMatrix, SEXP R_new_maxrow, SEXP R_new_maxc
   doubleBufferedMatrix Matrix;
   int new_maxrow, new_maxcol;
 
-    
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_ResizeBuffer");
+  }
+  
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
   if (Matrix == NULL){
@@ -340,7 +402,12 @@ SEXP R_bm_ResizeBuffer(SEXP R_BufferedMatrix, SEXP R_new_maxrow, SEXP R_new_maxc
 
 SEXP R_bm_RowMode(SEXP R_BufferedMatrix){
   
-  doubleBufferedMatrix Matrix;
+  doubleBufferedMatrix Matrix;  
+
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_RowMode");
+  }
+ 
     
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
@@ -368,7 +435,12 @@ SEXP R_bm_RowMode(SEXP R_BufferedMatrix){
 
 SEXP R_bm_ColMode(SEXP R_BufferedMatrix){
   
-  doubleBufferedMatrix Matrix;
+  doubleBufferedMatrix Matrix;  
+
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_ColMode");
+  }
+ 
     
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
@@ -403,7 +475,10 @@ SEXP R_bm_SetPrefix(SEXP R_BufferedMatrix, SEXP R_Prefix){
   doubleBufferedMatrix Matrix;
   char *prefix = CHAR(VECTOR_ELT(R_Prefix,0));
 
-
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_SetPrefix");
+  }
+ 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
   if (Matrix == NULL){
@@ -435,7 +510,11 @@ SEXP R_bm_ReadOnlyModeToggle(SEXP R_BufferedMatrix){
 
   doubleBufferedMatrix Matrix;
   int current_mode;
-
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_ReadOnlyModeToggle");
+  }
+ 
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
@@ -470,6 +549,10 @@ SEXP R_bm_isReadOnlyMode(SEXP R_BufferedMatrix){
 
   doubleBufferedMatrix Matrix;
   int current_mode;
+ 
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_isReadOnlyMode");
+  }
 
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
@@ -509,7 +592,10 @@ SEXP R_bm_isRowMode(SEXP R_BufferedMatrix){
 
   doubleBufferedMatrix Matrix;
   int current_mode;
-
+ 
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_isRowMode");
+  }
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
@@ -545,7 +631,11 @@ SEXP R_bm_isRowMode(SEXP R_BufferedMatrix){
 SEXP R_bm_getSize(SEXP R_BufferedMatrix){
 
   SEXP returnvalue;
-  doubleBufferedMatrix Matrix;
+  doubleBufferedMatrix Matrix; 
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_getSize");
+  }
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
@@ -583,6 +673,10 @@ SEXP R_bm_getBufferSize(SEXP R_BufferedMatrix){
 
   SEXP returnvalue;
   doubleBufferedMatrix Matrix;
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_getBufferSize");
+  }
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
   
@@ -1991,3 +2085,42 @@ SEXP R_bm_as_matrix(SEXP R_BufferedMatrix){
   return RMatrix;
 
 }
+
+
+
+SEXP isBufferedMatrix(SEXP R_BufferedMatrix){
+
+  
+  SEXP tagsxp;
+  SEXP returnvalue;
+
+  char truetagname[15] = "RBufferedMatrix";
+  char *tagname;
+
+ 
+
+
+  tagsxp = R_ExternalPtrTag(R_BufferedMatrix);
+
+
+  PROTECT(returnvalue = allocVector(LGLSXP,1));
+
+  if (!IS_CHARACTER(tagsxp)){
+    LOGICAL(returnvalue)[0] = FALSE;
+  } else {
+    tagname = CHARACTER_POINTER(VECTOR_ELT(tagsxp,0));
+    if (strncmp(truetagname,tagname,15) !=0){
+      LOGICAL(returnvalue)[0] = FALSE;
+    } else {
+      LOGICAL(returnvalue)[0] = TRUE;
+    }
+  }
+  
+
+
+  UNPROTECT(1);
+  return returnvalue;
+}
+
+
+

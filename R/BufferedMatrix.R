@@ -13,6 +13,7 @@
 ## Feb 22, 2006 - add Max, Min, mean, Sd, Var methods. Also rowMeans,rowSums,colMeans,colSums
 ## Feb 23, 2006 - added rowVar, rowSd, colVar, colSd, rowMax, colMax, rowMin, colMin methods
 ## Apr 26, 2006 - add colApply
+## May 30, 2006 - add subBufferedMatrix
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr"),
@@ -27,8 +28,6 @@ setMethod("dim", "BufferedMatrix", function(x){
 
 
 
-#Temp <- createBufferedMatrix(100)
-#dim(Temp)
 
 if(!isGeneric("buffer.dim") )
   setGeneric("buffer.dim", function(x)
@@ -845,4 +844,98 @@ setMethod("as.matrix", "BufferedMatrix", function(x){
   .Call("R_bm_as_matrix", x@rawBufferedMatrix, PACKAGE="BufferedMatrix")
   
 
+})
+
+
+
+
+if(!isGeneric("subBufferedMatrix"))
+  setGeneric("subBufferedMatrix", function(x,...)
+             standardGeneric("subBufferedMatrix"))
+
+
+
+setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
+
+
+  ###
+  ### i and j index rows and columns respectively
+  ###
+  ### Note this finds this data from the supplied buffered matrix
+  ### and copies it into a new buffered matrix which it returns
+  ###
+
+  
+    ## indexing a single cell or submatrix
+  if( !missing(i) & !missing(j)) {
+    if ((length(i) == 1 & all(i > 0)) & (length(j) ==1 & all(j > 0))){
+      ##single element
+      dim.x <- dim(x)
+      if ((abs(i) < 1) | (abs(i) > dim.x[1]) | (abs(j) < 1) | (abs(j) > dim.x[2])){
+        stop("subscript out of bounds")
+      }
+
+      if ((i > 0) & (j >0)){
+        return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(i-1),as.integer(j-1),PACKAGE="BufferedMatrix")))
+      } else {
+        ## at least one of i and j is negative
+        ##
+        indices.row <- (1:dim.x[1])[i]
+        indices.col <- (1:dim.x[2])[j]
+        return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix")))
+      }
+    } else {
+      ##multiple elements
+      dim.x <- dim(x)
+      
+      if (any(abs(i) < 1) | any(abs(i) > dim.x[1]) | any(abs(j) < 1) | any(abs(j) > dim.x[2])){
+        stop("subscript out of bounds")
+      }
+      indices.row <- (1:dim.x[1])[i]
+      indices.col <- (1:dim.x[2])[j]
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix")))
+    }
+
+    
+  }
+
+  ## indexing a row or set of rows
+  if( !missing(i) & missing(j)) {
+    dim.x <- dim(x)
+    if (any(abs(i) < 1) | any(abs(i) > dim.x[1])){
+      stop("subscript out of bounds")
+    }
+    if (any(i < 0) & !all(i <0)){
+      stop("can't mix positive and negative indices")
+    }
+    if (all(i <0)){
+      indices <- (1:dim.x[1])[i]
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices-1),as.integer(1:dim.x[2]-1),PACKAGE="BufferedMatrix")))
+    } else {
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(i-1),as.integer(1:dim.x[2]-1),PACKAGE="BufferedMatrix")))
+    }
+  }
+
+
+  ## indexing a column or set of columns
+  if( !missing(j) & missing(i)) {
+    dim.x <- dim(x)
+    if (any(abs(j) < 1) | any(abs(j) > dim.x[2])){
+      stop("subscript out of bounds")
+    }
+    if (any(j < 0) & !all(j <0)){
+      stop("can't mix positive and negative indices")
+    }
+    if (all(j <0)){
+      indices <- (1:dim.x[2])[j]
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(1:dim.x[1]-1),as.integer(indices-1),PACKAGE="BufferedMatrix")))
+    } else {
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(1:dim.x[1]-1),as.integer(j-1),PACKAGE="BufferedMatrix")))
+    }
+  }
+
+
+  
+
+  
 })

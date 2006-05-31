@@ -18,6 +18,7 @@
  **  Apr 26-27, 2006 R_bm_rowApply, R_bm_colApply, R_bm_as_matrix
  **  May 30, 2006 - Add a "tag" to  ExternalPtr with a text name so we can check whether pointer is a BufferedMatrix pointer.
  **                 Added functionality for checking whether a we have a BufferedMatrix or not
+ **                 Add R_bm_MakeSubmatrix
  **
  *****************************************************/
 
@@ -79,7 +80,7 @@ static int checkBufferedMatrix(SEXP R_BufferedMatrix){
   if (!IS_CHARACTER(tagsxp)){
     return 0;
   } else {
-    tagname = CHARACTER_POINTER(VECTOR_ELT(tagsxp,0));
+    tagname = CHAR(VECTOR_ELT(tagsxp,0));
     if (strncmp(truetagname,tagname,15) !=0){
       return 0;
     } else {
@@ -2108,7 +2109,7 @@ SEXP isBufferedMatrix(SEXP R_BufferedMatrix){
   if (!IS_CHARACTER(tagsxp)){
     LOGICAL(returnvalue)[0] = FALSE;
   } else {
-    tagname = CHARACTER_POINTER(VECTOR_ELT(tagsxp,0));
+    tagname = CHAR(VECTOR_ELT(tagsxp,0));
     if (strncmp(truetagname,tagname,15) !=0){
       LOGICAL(returnvalue)[0] = FALSE;
     } else {
@@ -2124,3 +2125,92 @@ SEXP isBufferedMatrix(SEXP R_BufferedMatrix){
 
 
 
+
+
+
+/*****************************************************
+ **
+ ** SEXP R_bm_MakeSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col)
+ **
+ ** SEXP R_BufferedMatrix
+ ** SEXP R_row - Rows to access in the matrix
+ ** SEXP R_col - Columns to access in the matrix
+ **
+ ** RETURNS values stored in BufferedMatrix at specified locations
+ **         Note that if a location outside the matrix dimensions is 
+ **         Specified then NA is returned.
+ ** 
+ ** This function gets specified section of the matrix as specified
+ ** by rows and columns and returns it stored in another BufferedMatrix
+ **
+ *****************************************************/
+
+
+SEXP R_bm_MakeSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
+  
+
+  SEXP returnvalue;
+
+  SEXP temp;
+  SEXP temp2;
+
+
+  doubleBufferedMatrix Matrix;
+  doubleBufferedMatrix destMatrix;
+
+  int i,j;
+  int nrows,ncols;
+
+  double tempbuffer;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  nrows = length(R_row);
+  ncols = length(R_col);
+  
+  PROTECT(temp2 = allocVector(INTSXP,1));
+  INTEGER(temp2)[0] = 1;
+  
+
+  PROTECT(returnvalue=R_bm_Create(R_bm_getPrefix(R_BufferedMatrix),
+				  R_bm_getDirectory(R_BufferedMatrix),
+				  temp2,temp2));
+
+  
+  PROTECT(temp = allocVector(INTSXP,1));
+  INTEGER(temp)[0] = nrows;
+  R_bm_setRows(returnvalue,temp);
+  UNPROTECT(1);
+  
+  for (j = 0; j < ncols; j++){
+    R_bm_AddColumn(returnvalue);
+  }
+
+  destMatrix = R_ExternalPtrAddr(returnvalue);
+
+
+
+  if (Matrix == NULL){ 
+    for (j=0; j < ncols; j++){
+      for (i = 0; i < nrows; i++){
+	tempbuffer = R_NaReal;
+	dbm_setValue(destMatrix,i,j,tempbuffer);
+      }
+    }
+    UNPROTECT(2); 
+    return returnvalue;
+  }
+  
+  for (j=0; j < ncols; j++){
+    for (i = 0; i < nrows; i++){
+      if(!dbm_getValue(Matrix,INTEGER(R_row)[i],  INTEGER(R_col)[j], &tempbuffer)){
+	tempbuffer = R_NaReal;
+      }
+      dbm_setValue(destMatrix,i,j,tempbuffer);
+    }
+  }
+  UNPROTECT(2); 
+  return returnvalue;
+
+}

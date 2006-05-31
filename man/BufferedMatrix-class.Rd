@@ -29,7 +29,7 @@
 \alias{colApply}
 \alias{rowApply}
 
-
+\alias{subBufferedMatrix}
 
 \alias{dim,BufferedMatrix-method}
 \alias{buffer.dim,BufferedMatrix-method}
@@ -76,7 +76,9 @@
 \alias{colApply,BufferedMatrix-method}
 
 \alias{as.matrix,BufferedMatrix-method}
+\alias{subBufferedMatrix,BufferedMatrix-method}
 
+  
 \title{Class BufferedMatrix}
 
 \description{This is a class representation of a buffered matrix (of
@@ -243,6 +245,10 @@
   \item{as.matrix}{\code{signature(object = "BufferedMatrix")}:
     coerce BufferedMatrix into a regular R \code{\link{matrix}}
   }
+
+  \item{subBufferedMatrix}{\code{signature(object = "BufferedMatrix")}:
+    gets data from BufferedMatrix and returns it in another BufferedMatrix}
+  
   
   }}
 

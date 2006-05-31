@@ -739,3 +739,10 @@ as.matrix(tmp)
 is.BufferedMatrix(tmp)
 
 as.BufferedMatrix(as.matrix(tmp))
+
+
+
+subBufferedMatrix(tmp,1:5,1:5)
+subBufferedMatrix(tmp,,5:8)
+subBufferedMatrix(tmp,1:3,)
+

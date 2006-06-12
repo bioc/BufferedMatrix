@@ -14,10 +14,13 @@
 ## Feb 23, 2006 - added rowVar, rowSd, colVar, colSd, rowMax, colMax, rowMin, colMin methods
 ## Apr 26, 2006 - add colApply
 ## May 30, 2006 - add subBufferedMatrix
+## June 9, 2006 - add rownames and colnames with accessors and replacement functions
+##                also allow some subsetting/indexing using these.
+##
 
 setClass("BufferedMatrix",
-           representation(rawBufferedMatrix="externalptr"),
-           prototype=list())
+           representation(rawBufferedMatrix="externalptr",rownames="character",colnames="character"),
+           prototype=list(rownames=character(0),colnames=character(0)))
 
 
 
@@ -41,6 +44,36 @@ setMethod("buffer.dim", "BufferedMatrix", function(x){
 
 setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
 
+
+  if (!missing(i)){
+    if (is.character(i)){
+      which.i <- match(i,x@rownames)
+      which.i <- which.i[!is.na(which.i)]
+      if (length(which.i) == 0){
+        stop("subscript out of bounds")
+      } else {
+        i <- which.i
+      }
+    }
+  }
+
+  
+  if (!missing(j)){
+    if (is.character(j)){
+      which.j <- match(j,x@colnames)
+      which.j <- which.j[!is.na(which.j)]
+      if (length(which.j) == 0){
+        stop("subscript out of bounds")
+      } else {
+        j <- which.j
+      }
+    }
+  }
+
+  
+
+
+  
   ## indexing a single cell or submatrix
   if( !missing(i) & !missing(j)) {
     if ((length(i) == 1 & all(i > 0)) & (length(j) ==1 & all(j > 0))){
@@ -68,7 +101,10 @@ setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
       }
       indices.row <- (1:dim.x[1])[i]
       indices.col <- (1:dim.x[2])[j]
-      return(.Call("R_bm_getValueSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix"))
+      result <- .Call("R_bm_getValueSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix")
+      rownames(result) <- rownames(x)[indices.row]
+      colnames(result) <- colnames(x)[indices.col]
+      return(result)
     }
 
     
@@ -85,9 +121,16 @@ setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
     }
     if (all(i <0)){
       indices <- (1:dim.x[1])[i]
-      return(.Call("R_bm_getValueRow",x@rawBufferedMatrix,as.integer(indices-1),PACKAGE="BufferedMatrix"))
+
+      result <- .Call("R_bm_getValueRow",x@rawBufferedMatrix,as.integer(indices-1),PACKAGE="BufferedMatrix")
+      colnames(result) <- colnames(x)
+      rownames(result) <- rownames(x)[indices]
+      return(result)
     } else {
-      return(.Call("R_bm_getValueRow",x@rawBufferedMatrix,as.integer(i-1),PACKAGE="BufferedMatrix"))
+      result <- .Call("R_bm_getValueRow",x@rawBufferedMatrix,as.integer(i-1),PACKAGE="BufferedMatrix")
+      colnames(result) <- colnames(x)
+      rownames(result) <- rownames(x)[i]
+      return(result)
     }
   }
 
@@ -103,9 +146,15 @@ setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
     }
     if (all(j <0)){
       indices <- (1:dim.x[2])[j]
-      return(.Call("R_bm_getValueColumn",x@rawBufferedMatrix,as.integer(indices-1),PACKAGE="BufferedMatrix"))
+      result <- .Call("R_bm_getValueColumn",x@rawBufferedMatrix,as.integer(indices-1),PACKAGE="BufferedMatrix")
+      rownames(result) <- rownames(x)
+      colnames(result) <- colnames(x)[indices]
+      return(result)
     } else {
-      return(.Call("R_bm_getValueColumn",x@rawBufferedMatrix,as.integer(j-1),PACKAGE="BufferedMatrix"))
+      result <-.Call("R_bm_getValueColumn",x@rawBufferedMatrix,as.integer(j-1),PACKAGE="BufferedMatrix")
+      rownames(result) <- rownames(x)
+      colnames(result) <- colnames(x)[j]
+      return(result)
     }
   }
 
@@ -163,6 +212,33 @@ setReplaceMethod("[", "BufferedMatrix", function(x, i, j,..., value){
   }
 
   
+  if (!missing(i)){
+    if (is.character(i)){
+      which.i <- match(i,x@rownames)
+      which.i <- which.i[!is.na(which.i)]
+      if (length(which.i) == 0){
+        stop("subscript out of bounds")
+      } else {
+        i <- which.i
+      }
+    }
+  }
+
+  
+  if (!missing(j)){
+    if (is.character(j)){
+      which.j <- match(j,x@colnames)
+      which.j <- which.j[!is.na(which.j)]
+      if (length(which.j) == 0){
+        stop("subscript out of bounds")
+      } else {
+        j <- which.j
+      }
+    }
+  }
+
+  
+
   
   if( !missing(i) & !missing(j)) {
     if ((length(i) == 1) & (length(j) ==1)){
@@ -864,6 +940,32 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
   ### Note this finds this data from the supplied buffered matrix
   ### and copies it into a new buffered matrix which it returns
   ###
+  
+  if (!missing(i)){
+    if (is.character(i)){
+      which.i <- match(i,x@rownames)
+      which.i <- which.i[!is.na(which.i)]
+      if (length(which.i) == 0){
+        stop("subscript out of bounds")
+      } else {
+        i <- which.i
+      }
+    }
+  }
+
+  
+  if (!missing(j)){
+    if (is.character(j)){
+      which.j <- match(j,x@colnames)
+      which.j <- which.j[!is.na(which.j)]
+      if (length(which.j) == 0){
+        stop("subscript out of bounds")
+      } else {
+        j <- which.j
+      }
+    }
+  }
+
 
   
     ## indexing a single cell or submatrix
@@ -876,13 +978,39 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
       }
 
       if ((i > 0) & (j >0)){
-        return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(i-1),as.integer(j-1),PACKAGE="BufferedMatrix")))
+        if (!is.null(colnames(x))){
+          this.colnames <-colnames(x)[i]
+        } else {
+          this.colnames <- character()
+        }
+
+        if (!is.null(rownames(x))){
+          this.rownames <-rownames(x)[j]
+        } else {
+          this.rownames <- character()
+        }
+      
+        return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(i-1),as.integer(j-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
       } else {
         ## at least one of i and j is negative
         ##
         indices.row <- (1:dim.x[1])[i]
         indices.col <- (1:dim.x[2])[j]
-        return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix")))
+
+        if (!is.null(colnames(x))){
+          this.colnames <-colnames(x)[indices.col]
+        } else {
+          this.colnames <- character()
+        }
+
+        if (!is.null(rownames(x))){
+          this.rownames <-rownames(x)[indices.row]
+        } else {
+          this.rownames <- character()
+        }
+      
+ 
+        return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
       }
     } else {
       ##multiple elements
@@ -893,7 +1021,20 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
       }
       indices.row <- (1:dim.x[1])[i]
       indices.col <- (1:dim.x[2])[j]
-      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix")))
+
+      if (!is.null(colnames(x))){
+        this.colnames <-colnames(x)[indices.col]
+      } else {
+        this.colnames <- character()
+      }
+
+      if (!is.null(rownames(x))){
+        this.rownames <-rownames(x)[indices.row]
+      } else {
+        this.rownames <- character()
+      }
+      
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices.row-1),as.integer(indices.col-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
     }
 
     
@@ -910,9 +1051,38 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
     }
     if (all(i <0)){
       indices <- (1:dim.x[1])[i]
-      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices-1),as.integer(1:dim.x[2]-1),PACKAGE="BufferedMatrix")))
+
+      
+      if (!is.null(colnames(x))){
+        this.colnames <-colnames(x)
+      } else {
+        this.colnames <- character()
+      }
+
+      if (!is.null(rownames(x))){
+        this.rownames <-rownames(x)[indices]
+      } else {
+        this.rownames <- character()
+      }
+            
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(indices-1),as.integer(1:dim.x[2]-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
     } else {
-      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(i-1),as.integer(1:dim.x[2]-1),PACKAGE="BufferedMatrix")))
+
+      if (!is.null(colnames(x))){
+        this.colnames <-colnames(x)
+      } else {
+        this.colnames <- character()
+      }
+
+      if (!is.null(rownames(x))){
+        this.rownames <-rownames(x)[i]
+      } else {
+        this.rownames <- character()
+      }
+      
+
+      
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(i-1),as.integer(1:dim.x[2]-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
     }
   }
 
@@ -928,9 +1098,36 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
     }
     if (all(j <0)){
       indices <- (1:dim.x[2])[j]
-      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(1:dim.x[1]-1),as.integer(indices-1),PACKAGE="BufferedMatrix")))
+
+      if (!is.null(colnames(x))){
+        this.colnames <-colnames(x)[indices]
+      } else {
+        this.colnames <- character()
+      }
+
+      if (!is.null(rownames(x))){
+        this.rownames <-rownames(x)
+      } else {
+        this.rownames <- character()
+      }
+      
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(1:dim.x[1]-1),as.integer(indices-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
     } else {
-      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(1:dim.x[1]-1),as.integer(j-1),PACKAGE="BufferedMatrix")))
+
+      if (!is.null(colnames(x))){
+        this.colnames <-colnames(x)[j]
+      } else {
+        this.colnames <- character()
+      }
+
+      if (!is.null(rownames(x))){
+        this.rownames <-rownames(x)
+      } else {
+        this.rownames <- character()
+      }
+      
+      
+      return(new("BufferedMatrix",rawBufferedMatrix=.Call("R_bm_MakeSubmatrix",x@rawBufferedMatrix,as.integer(1:dim.x[1]-1),as.integer(j-1),PACKAGE="BufferedMatrix"),rownames=this.rownames,colnames= this.colnames))
     }
   }
 
@@ -938,4 +1135,103 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
   
 
   
+})
+
+
+
+
+
+
+
+if(!isGeneric("rownames") )
+  setGeneric("rownames", function(x,do.NULL=TRUE,prefix="row")
+             standardGeneric("rownames"))
+
+
+setMethod("rownames","BufferedMatrix",function(x,do.NULL=TRUE,prefix="row"){
+
+  if (do.NULL)
+    if (length(x@rownames) == 0){
+      return(NULL)
+    } else {
+      return(x@rownames)
+    }
+  else
+    paste(prefix, seq(length = nrow(x)), sep = "")
+  
+})
+
+
+if(!isGeneric("colnames") )
+  setGeneric("colnames", function(x,do.NULL=TRUE,prefix="col")
+             standardGeneric("colnames"))
+
+
+setMethod("colnames","BufferedMatrix",function(x,do.NULL=TRUE,prefix="col"){
+
+  if (do.NULL)
+    if (length(x@colnames) == 0){
+      return(NULL)
+    } else {
+      return(x@colnames)
+    }
+  else
+    paste(prefix, seq(length = ncol(x)), sep = "")
+  
+})
+
+
+
+
+if(!isGeneric("colnames<-") )
+  setGeneric("colnames<-", function(x,value)
+             standardGeneric("colnames<-"))
+
+
+
+
+setReplaceMethod("colnames", "BufferedMatrix",function(x,value){
+
+  if(!is.null(value)){
+    value <- as.character(value)
+    value <- as.character(value)
+
+    if (ncol(x) == length(value)){
+      x@colnames <- as.vector(value)
+      x
+    }
+    else
+      stop("Incorrect length for colnames")
+  } else {
+    x@colnames <- character()
+    x
+  }
+})
+
+
+
+
+if(!isGeneric("rownames<-") )
+  setGeneric("rownames<-", function(x,value)
+             standardGeneric("rownames<-"))
+
+
+
+
+setReplaceMethod("rownames", "BufferedMatrix",function(x,value){
+
+  if(!is.null(value)){
+    value <- as.character(value)
+
+    if (nrow(x) == length(value)){
+      x@rownames <- as.vector(value)
+      x
+    }
+    else
+      stop("Incorrect length for rownames")
+  } else {
+    x@rownames <- character()
+    x
+
+  }
 })

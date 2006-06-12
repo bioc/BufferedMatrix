@@ -1,3 +1,4 @@
 Apr 26-27, 2006: Improve ewApply. Added colApply and rowApply. Added as.matrix.
 May 27, 2006: Fix problem with signature in definition for method Max. Fix some compiler warnings.
 May 30, 2006: Improve tests. Add as.BufferedMatrix, is.BufferedMatrix. Add subBufferedMatrix
+Jun 9, 2006: Add colnames and rownames items to R level BufferedMatrix (not accessible from C level).

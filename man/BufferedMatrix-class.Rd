@@ -78,7 +78,12 @@
 \alias{as.matrix,BufferedMatrix-method}
 \alias{subBufferedMatrix,BufferedMatrix-method}
 
-  
+\alias{colnames,BufferedMatrix-method}
+\alias{rownames,BufferedMatrix-method}
+\alias{colnames<-,BufferedMatrix-method}
+\alias{rownames<-,BufferedMatrix-method}
+
+
 \title{Class BufferedMatrix}
 
 \description{This is a class representation of a buffered matrix (of
@@ -90,7 +95,10 @@
   \describe{
     \item{\code{rawBufferedMatrix}:}{a pointer to an external structure
       used to access and store the matrix data.}
-    }
+    \item{\code{rownames}:}{rownames for the matrix.}
+    \item{\code{colnames}:}{colnames for the matrix.}
+  }
+ 
 }
 
 
@@ -247,8 +255,26 @@
   }
 
   \item{subBufferedMatrix}{\code{signature(object = "BufferedMatrix")}:
-    gets data from BufferedMatrix and returns it in another BufferedMatrix}
-  
+    gets data from BufferedMatrix and returns it in another
+    BufferedMatrix
+  }
+
+  \item{rownames}{\code{signature(object = "BufferedMatrix")} : access
+    the row names
+  }
+
+  \item{colnames}{\code{signature(object = "BufferedMatrix")} : access
+    the column names
+  }
+
+  \item{rownames<-}{\code{signature(object = "BufferedMatrix")} : replace
+    the row names
+  }
+
+  \item{colnames<-}{\code{signature(object = "BufferedMatrix")} : replace
+    the column names
+  }
+
   
   }}
 

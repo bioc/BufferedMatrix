@@ -746,3 +746,91 @@ subBufferedMatrix(tmp,1:5,1:5)
 subBufferedMatrix(tmp,,5:8)
 subBufferedMatrix(tmp,1:3,)
 
+
+rm(tmp)
+
+
+###
+### Testing colnames and rownames
+###
+
+tmp <- createBufferedMatrix(5,20)
+tmp[1:5,1:20] <- rnorm(100)
+
+
+colnames(tmp)
+rownames(tmp)
+
+
+colnames(tmp) <- colnames(tmp,do.NULL=FALSE)
+rownames(tmp) <- rownames(tmp,do.NULL=FALSE)
+
+colnames(tmp)
+rownames(tmp)
+
+
+tmp["row1",]
+tmp[,"col10"]
+tmp[c("row1","row5"),]
+tmp[,c("col6","col20")]
+tmp[c("row1","row5"),c("col6","col20")]
+
+
+
+
+tmp["row1",] <- rnorm(20,mean=10)
+tmp[,"col10"] <- rnorm(5,mean=30)
+tmp[c("row1","row5"),] <- rnorm(40,mean=50)
+tmp[,c("col6","col20")] <- rnorm(10,mean=75)
+tmp[c("row1","row5"),c("col6","col20")]  <- rnorm(4,mean=105)
+
+tmp["row1",]
+tmp[,"col10"]
+tmp[c("row1","row5"),]
+tmp[,c("col6","col20")]
+tmp[c("row1","row5"),c("col6","col20")]
+
+
+subBufferedMatrix(tmp,c("row1","row5"),c("col6","col20"))[1:2,1:2]
+
+
+
+
+
+tmp <- createBufferedMatrix(5,20)
+tmp[1:5,1:20] <- rnorm(100)
+colnames(tmp) <- colnames(tmp,do.NULL=FALSE)
+
+tmp[,"col13"]
+tmp[,c("col17","col7")]
+
+subBufferedMatrix(tmp,,c("col6","col20"))[,1:2]
+subBufferedMatrix(tmp,1,c("col6"))[,1]
+subBufferedMatrix(tmp,1:2,c("col6"))[,1]
+
+
+
+tmp <- createBufferedMatrix(5,20)
+tmp[1:5,1:20] <- rnorm(100)
+rownames(tmp) <- rownames(tmp,do.NULL=FALSE)
+
+
+
+
+subBufferedMatrix(tmp,c("row3","row1"),)[,1:20]
+subBufferedMatrix(tmp,c("row2"),1:10)[,1:10]
+subBufferedMatrix(tmp,c("row5"),1:20)[,1:20]
+
+
+colnames(tmp) <- colnames(tmp,do.NULL=FALSE)
+rownames(tmp) <- rownames(tmp,do.NULL=FALSE)
+
+colnames(tmp)
+rownames(tmp)
+
+
+colnames(tmp) <- NULL
+rownames(tmp) <- NULL
+
+colnames(tmp)
+rownames(tmp)

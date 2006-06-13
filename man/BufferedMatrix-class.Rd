@@ -83,6 +83,8 @@
 \alias{colnames<-,BufferedMatrix-method}
 \alias{rownames<-,BufferedMatrix-method}
 
+\alias{dimnames,BufferedMatrix-method}
+\alias{dimnames<-,BufferedMatrix-method}
 
 \title{Class BufferedMatrix}
 
@@ -275,6 +277,15 @@
     the column names
   }
 
+  \item{dimnames}{\code{signature(object = "BufferedMatrix")} : Access
+    the row and column names
+  }
+
+  \item{dimnames}{\code{signature(object = "BufferedMatrix")} : Replace
+    the row and column names
+  }
+
+  
   
   }}
 

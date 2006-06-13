@@ -16,7 +16,7 @@
 ## May 30, 2006 - add subBufferedMatrix
 ## June 9, 2006 - add rownames and colnames with accessors and replacement functions
 ##                also allow some subsetting/indexing using these.
-##
+## June 12, 2006 - add dimnames accessors and replacement functions
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr",rownames="character",colnames="character"),
@@ -1235,3 +1235,46 @@ setReplaceMethod("rownames", "BufferedMatrix",function(x,value){
 
   }
 })
+
+
+
+
+
+setMethod("dimnames","BufferedMatrix",function(x){
+
+
+  row.names <- rownames(x)
+  col.names <- colnames(x)
+
+  if (is.null(row.names) & is.null(col.names)){
+    return(NULL)
+  } else {
+    return(list(row.names,col.names))
+
+  }
+
+  
+
+
+})
+
+
+
+
+setReplaceMethod("dimnames","BufferedMatrix",function(x,value){
+
+
+  if (is.null(value)){
+    rownames(x) <- NULL
+    colnames(x) <- NULL
+    return(x)
+  } else  if (is.list(value) & (length(value) ==2)){
+    rownames(x) <- value[[1]]
+    colnames(x) <- value[[2]]
+    return (x)
+  } else {
+    stop("Wrong length supplied to repalce dimnames")
+  }
+
+})
+

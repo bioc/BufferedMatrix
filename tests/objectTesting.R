@@ -834,3 +834,22 @@ rownames(tmp) <- NULL
 
 colnames(tmp)
 rownames(tmp)
+
+
+colnames(tmp) <- colnames(tmp,do.NULL=FALSE)
+rownames(tmp) <- rownames(tmp,do.NULL=FALSE)
+
+dimnames(tmp)
+
+dimnames(tmp) <- NULL
+
+colnames(tmp) <- colnames(tmp,do.NULL=FALSE)
+dimnames(tmp)
+
+
+dimnames(tmp) <- NULL
+rownames(tmp) <- rownames(tmp,do.NULL=FALSE)
+dimnames(tmp)
+
+dimnames(tmp) <- list(NULL,c(colnames(tmp,do.NULL=FALSE)))
+dimnames(tmp)

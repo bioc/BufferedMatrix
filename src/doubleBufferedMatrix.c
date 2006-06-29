@@ -20,6 +20,8 @@
  **  Feb 16, 2006 - make the internal functions "static", dbm_getPrefix, dbm_getDirectory, dbm_copyValues added
  **  Feb 17, 2006 - added dbm_ewApply for applying C level functions
  **  Feb 22, 2006 - add dbm_max etc. also row*, col* where (*=Mean,Sum,Var,Max,Min)
+ **  Jun 28, 2006 - change some loops to memset, more protection in colmode, rowmode switching
+ **                 Speed-up optimizations for the getCol, SetCol type functions
  **
  *****************************************************/
 
@@ -525,6 +527,57 @@ static int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
   
 }
 
+/*****************************************************
+ ** 
+ ** void dbm_LoadNewColumn_nofill(doubleBufferedMatrix Matrix,int col);
+ **
+ ** doubleBufferedMatrix Matrix
+ ** int col - column of the matrix to load into the buffer
+ **
+ ** Read the specified column into the column buffer (at the end of the buffer)
+ **
+ ** Works by moving the oldest column from the  column buffer (at the beginning of the buffer)
+ ** to the newest (at end). Does not fill it with new data. The calling function should appropriately
+ ** handle this.
+ **
+ ** WARNING: If you don't no why this function exists you should probably
+ **          be calling dbm_LoadNewColumn instead
+ **
+ ** Returns 0 if successful, returns 1 if problem
+ **
+ ****************************************************/
+
+static int dbm_LoadNewColumn_nofill(doubleBufferedMatrix Matrix,int col){
+  
+  const char *mode = "rb";
+  FILE *myfile;
+  double *tmpptr;
+  int lastcol;
+  int j;
+
+
+  if (Matrix->cols < Matrix->max_cols){
+    lastcol = Matrix->cols;
+  } else {
+    lastcol = Matrix->max_cols;
+  }
+  
+  tmpptr = Matrix->coldata[0];
+
+  for (j=1; j < lastcol; j++){
+    Matrix->coldata[j-1] = Matrix->coldata[j];
+    Matrix->which_cols[j-1] = Matrix->which_cols[j];
+  }
+  
+  Matrix->which_cols[lastcol -1] = col;
+  Matrix->coldata[lastcol -1] = tmpptr;
+  
+  //printf("loading column %d \n",whichcol);
+  return 0;
+  
+}
+
+
 
 /*****************************************************
  ** 
@@ -945,9 +998,13 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
     Matrix->coldata = temp_ptr;
     
-    for (i =0; i < Matrix->rows; i++){
-      Matrix->coldata[Matrix->cols][i] = 0.0;  //(cols)*rows + i; 
-    }
+    /* for (i =0; i < Matrix->rows; i++){
+       Matrix->coldata[Matrix->cols][i] = 0.0;  //(cols)*rows + i; 
+       } */
+    memset(&Matrix->coldata[Matrix->cols][0],0,sizeof(double)* Matrix->rows);
+
+
+
     which_col_num = Matrix->cols;
     Matrix->which_cols = temp_indices;
     Free(temp_old_indices);
@@ -963,9 +1020,12 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
       }
       temp_ptr[Matrix->cols] = Calloc(Matrix->max_rows,double);
       
-      for (i=0; i < Matrix->max_rows; i++){
-	temp_ptr[Matrix->cols][i] = 0.0;   // (cols)*rows + i; 
-      }
+      /* for (i=0; i < Matrix->max_rows; i++){
+	 temp_ptr[Matrix->cols][i] = 0.0;   // (cols)*rows + i; 
+	 }
+      */
+      memset(&temp_ptr[Matrix->cols][0],0,sizeof(double)* Matrix->max_rows);
+
 
 
       Matrix->rowdata = temp_ptr;
@@ -989,10 +1049,13 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
     }
     Matrix->which_cols[Matrix->max_cols-1] = Matrix->cols;
     Matrix->coldata[Matrix->max_cols-1] = temp_col; //new double[this->rows];
-    for (i =0; i < Matrix->rows; i++){
-      Matrix->coldata[Matrix->max_cols-1][i] = 0.0; // (cols)*rows +i;
-    }
-   
+    /* 
+       for (i =0; i < Matrix->rows; i++){
+       Matrix->coldata[Matrix->max_cols-1][i] = 0.0; // (cols)*rows +i;
+       }
+    */
+    memset(&Matrix->coldata[Matrix->max_cols-1][0],0,sizeof(double)* Matrix->rows);
+
     
     which_col_num = Matrix->max_cols-1;
 
@@ -1007,10 +1070,12 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
       }
       temp_ptr[Matrix->cols] = Calloc(Matrix->max_rows,double);
       
-      for (i=0; i < Matrix->max_rows; i++){
+      /*
+	for (i=0; i < Matrix->max_rows; i++){
 	temp_ptr[Matrix->cols][i] = 0.0;      //(cols)*rows + i;
-      }
-      
+	}
+      */
+      memset(&temp_ptr[Matrix->cols][0],0,sizeof(double)* Matrix->max_rows);
       
       Matrix->rowdata = temp_ptr;
       Free(old_temp_ptr);
@@ -1361,16 +1426,15 @@ void dbm_RowMode(doubleBufferedMatrix Matrix){
    **             - copy across relevant data that is in column buffer
    **             - set colmode flag to false
    */
-  Matrix->rowdata = Calloc(Matrix->cols +1,double *);
-  for (j =0; j < Matrix->cols; j++){
-    Matrix->rowdata[j] = Calloc(Matrix->max_rows,double);
+  if (Matrix->colmode == 1){
+    Matrix->rowdata = Calloc(Matrix->cols +1,double *);
+    for (j =0; j < Matrix->cols; j++){
+      Matrix->rowdata[j] = Calloc(Matrix->max_rows,double);
+    }
+    dbm_LoadRowBuffer(Matrix,0); /* this both fills the row buffer and copys across anything in the current column buffer */
+    Matrix->colmode =0;
   }
-  dbm_LoadRowBuffer(Matrix,0); /* this both fills the row buffer and copys across anything in the current column buffer */
-  Matrix->colmode =0;
-
-
-
-
+  
 }
 
 
@@ -1391,18 +1455,18 @@ void dbm_ColMode(doubleBufferedMatrix Matrix){
   **            - deallocate row buffer
   **            - set colmode flag to true
   ** */
-
-  if (Matrix->rowcolclash){
-    dbm_ClearClash(Matrix);
+  if (Matrix->colmode == 0){
+    if (Matrix->rowcolclash){
+      dbm_ClearClash(Matrix);
+    }
+    dbm_FlushRowBuffer(Matrix);
+    
+    for (j =0; j < Matrix->cols; j++){
+      Free(Matrix->rowdata[j]);
+    }
+    Free(Matrix->rowdata);
+    Matrix->colmode = 1;
   }
-  dbm_FlushRowBuffer(Matrix);
-
-  for (j =0; j < Matrix->cols; j++){
-    Free(Matrix->rowdata[j]);
-  }
-  Free(Matrix->rowdata);
-  Matrix->colmode = 1;
-
 
 }
 
@@ -1745,6 +1809,8 @@ int dbm_getValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, in
   double *tmp;
   int i,j;
 
+  int curcol;
+
 
   for (j=0; j < ncols; j++){
     if ((cols[j] >= Matrix->cols) || (cols[j] < 0)){
@@ -1752,12 +1818,25 @@ int dbm_getValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, in
     }
   }
 
-
-  for (j= 0; j < ncols; j++){
-    for (i =0; i < Matrix->rows; i++){
-      tmp = dbm_internalgetValue(Matrix,i,cols[j]);
-      value[j*Matrix->rows+ i] = *tmp; 
-      Matrix->rowcolclash = 0; /* we are not setting anything here */
+  if (!Matrix->colmode){
+    for (j= 0; j < ncols; j++){
+      for (i =0; i < Matrix->rows; i++){
+	tmp = dbm_internalgetValue(Matrix,i,cols[j]);
+	value[j*Matrix->rows+ i] = *tmp; 
+	Matrix->rowcolclash = 0; /* we are not setting anything here */
+      }
+    }
+  } else {
+    
+    for (j= 0; j < ncols; j++){
+      if (dbm_InColBuffer(Matrix,0,cols[j],&curcol)){
+	memcpy(&value[j*Matrix->rows],&(Matrix->coldata[curcol][0]),Matrix->rows*sizeof(double));
+      } else {
+	if (!(Matrix->readonly))
+	  dbm_FlushOldestColumn(Matrix); 
+	dbm_LoadNewColumn(Matrix,cols[j]);
+	memcpy(&value[j*Matrix->rows],&(Matrix->coldata[Matrix->max_cols -1][0]),Matrix->rows*sizeof(double));
+      }
     }
   }
   
@@ -1808,6 +1887,8 @@ int dbm_setValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, in
 
   double *tmp;
   int i,j;
+
+  int curcol;
   
   if (Matrix->readonly){
     return 0; /* not successful */
@@ -1819,14 +1900,31 @@ int dbm_setValueColumn(doubleBufferedMatrix Matrix, int *cols, double *value, in
       return 0;
     }
   }
-
-  for (j=0; j < ncols; j++){
-    for (i =0; i < Matrix->rows; i++){
-      tmp = dbm_internalgetValue(Matrix,i,cols[j]);
-      *tmp = value[j*Matrix->rows + i];
+  if (!Matrix->colmode){
+    for (j=0; j < ncols; j++){
+      for (i =0; i < Matrix->rows; i++){
+	tmp = dbm_internalgetValue(Matrix,i,cols[j]);
+	*tmp = value[j*Matrix->rows + i];
+      }
     }
+  } else {
+    for (j= 0; j < ncols; j++){
+      if (dbm_InColBuffer(Matrix,0,cols[j],&curcol)){
+	memcpy(&(Matrix->coldata[curcol][0]),&value[j*Matrix->rows],Matrix->rows*sizeof(double));
+      } else {
+	if (!(Matrix->readonly))
+	  dbm_FlushOldestColumn(Matrix); 
+	dbm_LoadNewColumn_nofill(Matrix,cols[j]);
+	memcpy(&(Matrix->coldata[Matrix->max_cols -1][0]),&value[j*Matrix->rows],Matrix->rows*sizeof(double));
+      }
+    }
+
+    
+
+
+
+
   }
-  
 
   return 1;
 }

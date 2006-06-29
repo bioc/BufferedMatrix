@@ -3,3 +3,4 @@ May 27, 2006: Fix problem with signature in definition for method Max. Fix some 
 May 30, 2006: Improve tests. Add as.BufferedMatrix, is.BufferedMatrix. Add subBufferedMatrix
 Jun 9, 2006: Add colnames and rownames items to R level BufferedMatrix (not accessible from C level).
 Jun 12, 2006: Add dimnames
+Jun 28, 2006: Fix problem when colMode is called on a matrix already in colMode. Add some optimizations to C code for setColumn, getColumn operations.

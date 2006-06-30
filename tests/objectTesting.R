@@ -853,3 +853,11 @@ dimnames(tmp)
 
 dimnames(tmp) <- list(NULL,c(colnames(tmp,do.NULL=FALSE)))
 dimnames(tmp)
+
+
+##
+## Test the ReadOnlyMode
+##
+
+ReadOnlyMode(tmp)
+is.ReadOnlyMode(tmp)

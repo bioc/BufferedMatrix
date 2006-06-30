@@ -29,6 +29,9 @@
 \alias{colApply}
 \alias{rowApply}
 
+\alias{ReadOnlyMode}
+\alias{is.ReadOnlyMode}
+
 \alias{subBufferedMatrix}
 
 \alias{dim,BufferedMatrix-method}
@@ -85,6 +88,9 @@
 
 \alias{dimnames,BufferedMatrix-method}
 \alias{dimnames<-,BufferedMatrix-method}
+
+\alias{ReadOnlyMode,BufferedMatrix-method}
+\alias{is.ReadOnlyMode,BufferedMatrix-method}
 
 \title{Class BufferedMatrix}
 
@@ -285,6 +291,17 @@
     the row and column names
   }
 
+
+  \item{ReadOnlyMode}{\code{signature(object = "BufferedMatrix")} :
+    Toggles the Read Only mode on and off
+  }
+
+  \item{is.ReadOnlyMode}{\code{signature(object = "BufferedMatrix")} :
+    Finds out if it is in Read Only Mode
+  }
+
+  
+  
   
   
   }}

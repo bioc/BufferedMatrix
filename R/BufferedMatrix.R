@@ -17,6 +17,8 @@
 ## June 9, 2006 - add rownames and colnames with accessors and replacement functions
 ##                also allow some subsetting/indexing using these.
 ## June 12, 2006 - add dimnames accessors and replacement functions
+## June 29, 2006 - add ReadOnly and is.ReadOnly (which inexplicably had the C code done
+##                 but were never had methods implemented)
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr",rownames="character",colnames="character"),
@@ -206,6 +208,10 @@ setReplaceMethod("[", "BufferedMatrix", function(x, i, j,..., value){
     
   }
 
+  if (is.ReadOnlyMode(x)){
+    stop("BufferedMatrix is ReadOnly.")
+  }
+
 
   if (!is.double(value)){
     value <- as.double(value)
@@ -330,8 +336,9 @@ setMethod("show", "BufferedMatrix", function(object){
   } else {
     cat("Col mode\n")
   }
-  
-  
+  cat("Read Only: ")
+  cat(is.ReadOnlyMode(object))
+  cat("\n")
   
 })
 
@@ -494,6 +501,13 @@ if(!isGeneric("ewApply") )
 
 setMethod("ewApply", "BufferedMatrix", function(x,FUN,...){
 
+
+  if (is.ReadOnlyMode(x)){
+    stop("BufferedMatrix is ReadOnly.")
+  }
+  
+
+  
   if (missing(FUN)){
     stop("Must provide function to apply.")
   }
@@ -537,7 +551,10 @@ setMethod("ewApply", "BufferedMatrix", function(x,FUN,...){
 
 setMethod("sqrt","BufferedMatrix",function(x){
 
-  
+  if (is.ReadOnlyMode(x)){
+    stop("BufferedMatrix is ReadOnly.")
+  }
+
   return(.Call("R_bm_ewSqrt",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
   
 
@@ -547,6 +564,10 @@ setMethod("sqrt","BufferedMatrix",function(x){
 
 setMethod("exp","BufferedMatrix",function(x){
 
+  if (is.ReadOnlyMode(x)){
+    stop("BufferedMatrix is ReadOnly.")
+  }
+  
   
   return(.Call("R_bm_ewExp",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
   
@@ -557,13 +578,11 @@ setMethod("exp","BufferedMatrix",function(x){
 
 setMethod("log","BufferedMatrix",function(x,base = exp(1)){
 
-
-
+  if (is.ReadOnlyMode(x)){
+    stop("BufferedMatrix is ReadOnly.")
+  }
   
   return(.Call("R_bm_ewLog",x@rawBufferedMatrix,base,PACKAGE="BufferedMatrix"))
-  
-
-
 })
 
 
@@ -576,13 +595,12 @@ if(!isGeneric("pow") )
 
 setMethod("pow","BufferedMatrix",function(x,power=1){
 
-
-
   
+  if (is.ReadOnlyMode(x)){
+    stop("BufferedMatrix is ReadOnly.")
+  }
+
   return(.Call("R_bm_ewPow",x@rawBufferedMatrix,power,PACKAGE="BufferedMatrix"))
-  
-
-
 })
 
 
@@ -1275,6 +1293,40 @@ setReplaceMethod("dimnames","BufferedMatrix",function(x,value){
   } else {
     stop("Wrong length supplied to repalce dimnames")
   }
+
+})
+
+
+
+
+
+if(!isGeneric("ReadOnlyMode") )
+  setGeneric("ReadOnlyMode", function(x)
+             standardGeneric("ReadOnlyMode"))
+
+
+
+
+
+setMethod("ReadOnlyMode","BufferedMatrix",function(x){
+
+
+  .Call("R_bm_ReadOnlyModeToggle",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
+
+})
+
+
+
+if(!isGeneric("is.ReadOnlyMode") )
+  setGeneric("is.ReadOnlyMode", function(x)
+             standardGeneric("is.ReadOnlyMode"))
+
+
+
+setMethod("is.ReadOnlyMode","BufferedMatrix",function(x){
+
+
+  .Call("R_bm_isReadOnlyMode",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
 
 })
 

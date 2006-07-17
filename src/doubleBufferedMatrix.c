@@ -25,6 +25,7 @@
  **  Jun 29, 2006 - Add functionality for making better use of cache (ie don't throw something
  **                 out of cache only to have to read it in again, without using it first) for functions
  **                 that work across the whole matrix eg colSums, colMin etc
+ **  Jul 17, 2006 - better buffer usage in dbm_getValueRow, dbm_setValueRow, dbm_ewApply
  **
  *****************************************************/
 
@@ -1862,7 +1863,11 @@ int dbm_getValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
 
   double *tmp;
   int i,j;
-
+  
+  int *BufferContents;
+  int *colsdone;
+  
+ 
   for (i =0; i < nrows; i++){
     if ((rows[i] >= Matrix->rows) || (rows[i] < 0)){
       return 0;
@@ -1870,13 +1875,45 @@ int dbm_getValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
   }
 
   if (Matrix->colmode){
-    for (j =0; j < Matrix->cols; j++){
-      for (i =0; i < nrows; i++){
-	tmp = dbm_internalgetValue(Matrix,rows[i],j);
-	value[j*nrows + i] = *tmp; 
-	Matrix->rowcolclash = 0; /* we are not setting anything here */
-      }
-    }
+    if (Matrix->cols > Matrix->max_cols){ 
+
+     /** First use what is already in the buffers **/
+
+     BufferContents= dbm_whatsInColumnBuffer(Matrix); 
+     colsdone = Calloc(Matrix->cols,int);
+     
+     for (j=0; j < Matrix->max_cols; j++){
+       for (i=0; i < nrows; i++){
+	 tmp = dbm_internalgetValue(Matrix,rows[i],BufferContents[j]);
+	 value[BufferContents[j]*nrows + i] = *tmp; 
+	 Matrix->rowcolclash = 0; /* we are not setting anything here */
+       }
+       colsdone[BufferContents[j]] = 1;
+     }
+
+     /** now do the rest by reading it in **/
+     
+     for (j=0; j < Matrix->cols; j++){
+       if (colsdone[j] == 0){
+	 for (i=0; i < nrows; i++){
+	   tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	   value[j*nrows + i] = *tmp; 
+	   Matrix->rowcolclash = 0; /* we are not setting anything here */
+	 }
+       }
+     }
+
+     Free(colsdone);
+   } else {
+     /* everything is already in memory, no need to read in */
+     for (j =0; j < Matrix->cols; j++){
+       for (i =0; i < nrows; i++){
+	 tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	 value[j*nrows + i] = *tmp; 
+	 Matrix->rowcolclash = 0; /* we are not setting anything here */
+       }
+     }
+   }
   } else {
     for (i =0; i < nrows; i++){
       for (j =0; j < Matrix->cols; j++){
@@ -1950,7 +1987,12 @@ int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
 
   double *tmp;
   int i,j;
+    
+  int *BufferContents;
+  int *colsdone;
   
+ 
+
   if (Matrix->readonly){
     return 0; /* not successful */
 
@@ -1964,10 +2006,39 @@ int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
 
 
   if (Matrix->colmode){
-    for (j =0; j < Matrix->cols; j++){  
-      for (i =0; i < nrows; i++){
-	tmp = dbm_internalgetValue(Matrix,rows[i],j);
-	*tmp = value[j*nrows + i];
+    if (Matrix->cols > Matrix->max_cols){ 
+       
+     /** First use what is already in the buffers **/
+
+     BufferContents= dbm_whatsInColumnBuffer(Matrix); 
+     colsdone = Calloc(Matrix->cols,int);
+ 
+     for (j=0; j < Matrix->max_cols; j++){
+       for (i=0; i < nrows; i++){
+	 tmp = dbm_internalgetValue(Matrix,rows[i],BufferContents[j]);
+	 *tmp = value[BufferContents[j]*nrows + i];
+       }
+       colsdone[BufferContents[j]] = 1;
+     }
+
+     /** now do the rest by reading it in **/
+     
+     for (j=0; j < Matrix->cols; j++){
+       if (colsdone[j] == 0){
+	 for (i=0; i < nrows; i++){
+	   tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	   *tmp = value[j*nrows + i];
+	 }
+       }
+     }
+
+     Free(colsdone);
+    } else {
+      for (j =0; j < Matrix->cols; j++){  
+	for (i =0; i < nrows; i++){
+	  tmp = dbm_internalgetValue(Matrix,rows[i],j);
+	  *tmp = value[j*nrows + i];
+	}
       }
     }
   } else {
@@ -2046,13 +2117,50 @@ int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),doub
   int i, j;
   double *value, *tmp;
 
-  for (j=0; j < Matrix->cols; j++){
-    for (i=0; i < Matrix->rows; i++){
-      value = dbm_internalgetValue(Matrix,i,j);
-      *value = fn(*value,fn_param);
-    }
-  }
+  int *BufferContents;
+  int *colsdone;
   
+
+
+  if (Matrix->cols > Matrix->max_cols){  
+
+    BufferContents= dbm_whatsInColumnBuffer(Matrix);
+    colsdone = Calloc(Matrix->cols,int);
+    
+    /* Matrix doesn't have all the columns in the buffer */
+    /* First do the columns currently in the buffer */
+    for (j=0; j < Matrix->max_cols; j++){
+      for (i=0; i < Matrix->rows; i++){
+	value = dbm_internalgetValue(Matrix,i,BufferContents[j]);
+	*value = fn(*value,fn_param);
+      }
+      colsdone[BufferContents[j]] = 1;
+    }
+
+    /* now read in  what we need to read in */
+    for (j=0; j < Matrix->cols; j++){
+      if (colsdone[j] == 0){
+	for (i=0; i < Matrix->rows; i++){
+	  value = dbm_internalgetValue(Matrix,i,j);
+	  *value = fn(*value,fn_param);
+	}
+      }
+    }
+    
+
+    Free(colsdone);
+  } else {
+    /* everything is in memory. Lets process it */
+    for (j=0; j < Matrix->cols; j++){
+      for (i=0; i < Matrix->rows; i++){
+	value = dbm_internalgetValue(Matrix,i,j);
+	*value = fn(*value,fn_param);
+      }
+    }
+  
+  }
+
+
   return 1;
 
 }

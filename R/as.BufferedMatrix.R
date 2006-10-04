@@ -5,7 +5,7 @@
 ## Aim: coerce an ordinary R matrix (or vector) to be a buffered.matrix.
 ## Aim: check whether object is a BufferedMatrix
 ## 
-##
+## Oct 3, 2006 - make as.BufferedMatrix call the C version
 ##
 
 
@@ -27,9 +27,11 @@ as.BufferedMatrix <- function(x){
     newBufferedMatrix <- createBufferedMatrix(dim(x)[1],dim(x)[2])
 
     if (storage.mode(x) == "double"){
-      for (col in 1:dim(x)[2]){
-        newBufferedMatrix[,col] <- x[,col]
-      }
+
+      .Call("R_bm_as_BufferedMatrix",newBufferedMatrix@rawBufferedMatrix,x,PACKAGE="BufferedMatrix")
+      ##for (col in 1:dim(x)[2]){
+      ##  newBufferedMatrix[,col] <- x[,col]
+      ##}
     } else if (storage.mode(x) == "integer"){
       for (col in 1:dim(x)[2]){
         newBufferedMatrix[,col] <- as.double(x[,col])

@@ -19,6 +19,7 @@
  **  May 30, 2006 - Add a "tag" to  ExternalPtr with a text name so we can check whether pointer is a BufferedMatrix pointer.
  **                 Added functionality for checking whether a we have a BufferedMatrix or not
  **                 Add R_bm_MakeSubmatrix
+ **  Oct 3, 2006 - add R_bm_as_BufferedMatrix   
  **
  *****************************************************/
 
@@ -2214,3 +2215,48 @@ SEXP R_bm_MakeSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
   return returnvalue;
 
 }
+
+
+
+
+
+
+
+
+
+SEXP R_bm_as_BufferedMatrix(SEXP R_BufferedMatrix, SEXP RMatrix){
+
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+  int rows, cols;
+  int j;
+
+  int rows_RMatrix;
+  int cols_RMatrix;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+
+  /* Check the supplied BufferedMatrices actually allocated */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  rows = dbm_getRows(Matrix);
+  cols = dbm_getCols(Matrix);
+
+
+  for (j=0; j < cols; j++){
+    dbm_setValueColumn(Matrix, &j, &REAL(RMatrix)[j*rows],1);
+  }
+  
+
+  
+  return R_BufferedMatrix;
+
+}
+
+
+
+

@@ -7,11 +7,15 @@
   argument is a BufferedMatrix.
 }
 \usage{
- as.BufferedMatrix(x)
+ as.BufferedMatrix(x, bufferrows=1, buffercols=1,directory=getwd())
  is.BufferedMatrix(x)
 }
 \arguments{
   \item{x}{an R object}
+  \item{bufferrows}{number of rows to be buffered if the row buffer is activated}
+  \item{buffercols}{number of columns to be buffered}
+  \item{directory}{path to directory where temporary files should be stored}
+
 }
 \details{
   These functions are useful for converting between R

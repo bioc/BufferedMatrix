@@ -6,3 +6,4 @@ Jun 12, 2006: Add dimnames
 Jun 28, 2006: Fix problem when colMode is called on a matrix already in colMode. Add some optimizations to C code for setColumn, getColumn operations.
 Jul 17, 2006: better buffer usage in dbm_getValueRow, dbm_setValueRow, dbm_ewApply
 Oct 3, 2006: Make as.BufferedMatrix call a C routine to do the work.
+Oct 6, 2006: allow as.BufferedMatrix a little more control over the created buffered matrix

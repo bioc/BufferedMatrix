@@ -6,11 +6,11 @@
 ## Aim: check whether object is a BufferedMatrix
 ## 
 ## Oct 3, 2006 - make as.BufferedMatrix call the C version
-##
+## Oct 6, 2006 - allow directory information to be passed into the function, allong with buffer size
 
 
 
-as.BufferedMatrix <- function(x){
+as.BufferedMatrix <- function(x,bufferrows=1, buffercols=1,directory=getwd()){
 
 
   if (!(is.matrix(x) | is.vector(x))){
@@ -24,7 +24,7 @@ as.BufferedMatrix <- function(x){
 
 
   if (is.matrix(x)){
-    newBufferedMatrix <- createBufferedMatrix(dim(x)[1],dim(x)[2])
+    newBufferedMatrix <- createBufferedMatrix(dim(x)[1],dim(x)[2],bufferrows, buffercols,directory)
 
     if (storage.mode(x) == "double"){
 

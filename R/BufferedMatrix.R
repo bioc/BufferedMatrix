@@ -19,6 +19,9 @@
 ## June 12, 2006 - add dimnames accessors and replacement functions
 ## June 29, 2006 - add ReadOnly and is.ReadOnly (which inexplicably had the C code done
 ##                 but were never had methods implemented)
+## Oct 21, 2006  - add colMedians
+## Oct 22, 2006  - add colRanges
+
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr",rownames="character",colnames="character"),
@@ -837,6 +840,33 @@ setMethod("colMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 })
 
+
+
+if(!isGeneric("colMedians") )
+  setGeneric("colMedians", function(x,na.rm = FALSE)
+             standardGeneric("colMedians"))
+
+
+setMethod("colMedians","BufferedMatrix",function(x,na.rm=FALSE){
+
+  return(.Call("R_bm_colMedians",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+
+})
+
+if(!isGeneric("colRanges") )
+  setGeneric("colRanges", function(x,na.rm = FALSE)
+             standardGeneric("colRanges"))
+
+
+setMethod("colRanges","BufferedMatrix",function(x,na.rm=FALSE){
+
+  return(.Call("R_bm_colRanges",x@rawBufferedMatrix,na.rm,FALSE,PACKAGE="BufferedMatrix"))
+
+
+
+})
 
 
 

@@ -17,6 +17,8 @@
 \alias{colMin}
 \alias{colSd}
 \alias{colVars}
+\alias{colMedians}
+\alias{colRanges}
 \alias{Max}
 \alias{Min}
 \alias{Sd}
@@ -67,6 +69,9 @@
 \alias{rowSd,BufferedMatrix-method}
 \alias{colSums,BufferedMatrix-method}
 \alias{rowSums,BufferedMatrix-method}
+\alias{colMedians,BufferedMatrix-method}
+\alias{colRanges,BufferedMatrix-method}
+
 
 \alias{Max,BufferedMatrix-method}
 \alias{Min,BufferedMatrix-method}

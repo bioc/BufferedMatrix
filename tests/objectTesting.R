@@ -591,6 +591,17 @@ agree.checks <- function(buff.matrix,r.matrix,err.tol=1e-10){
   if(any(abs(colMin(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,min,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in colMin")
   }
+
+  if(any(abs(colMedians(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,median,na.rm=TRUE)) > err.tol,na.rm=TRUE)){
+    stop("No agreement in colMedian")
+  }
+
+  if(any(abs(colRanges(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,range,na.rm=TRUE)) > err.tol,na.rm=TRUE)){
+    stop("No agreement in colRanges")
+  }
+
+
+  
 }
 
 
@@ -682,7 +693,8 @@ colVars(tmp)
 colSd(tmp)
 colMax(tmp)
 colMin(tmp)
-
+colMedians(tmp)
+colRanges(tmp)
 
 
 Max(tmp2)
@@ -704,7 +716,8 @@ colVars(tmp2)
 colSd(tmp2)
 colMax(tmp2)
 colMin(tmp2)
-
+colMedians(tmp2)
+colRanges(tmp2)
 
 dataset1 <- matrix(dataset1,1,100)
 

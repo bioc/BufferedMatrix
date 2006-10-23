@@ -73,6 +73,8 @@ void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_colVars(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_colMedians(doubleBufferedMatrix Matrix,int naflag,double *results);
+void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *results);
 
 
 #endif

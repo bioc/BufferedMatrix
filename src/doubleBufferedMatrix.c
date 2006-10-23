@@ -26,6 +26,8 @@
  **                 out of cache only to have to read it in again, without using it first) for functions
  **                 that work across the whole matrix eg colSums, colMin etc
  **  Jul 17, 2006 - better buffer usage in dbm_getValueRow, dbm_setValueRow, dbm_ewApply
+ **  Oct 21, 2006 - add dbm_colMedians
+ **  Oct 22, 2006 - add dbm_colRanges, cleaned up some of the NA handling in colSums, colMeans
  **
  *****************************************************/
 
@@ -2670,8 +2672,8 @@ static void dbm_singlecolMeans(doubleBufferedMatrix Matrix,int j,int naflag,doub
 
   int i;
   double *value;
-  int foundNA;
-  int counts; 
+  int foundNA=0;
+  int counts=0; 
   
   results[j] = 0.0;
 
@@ -2681,7 +2683,7 @@ static void dbm_singlecolMeans(doubleBufferedMatrix Matrix,int j,int naflag,doub
     if (ISNAN(*value)){
       if (!naflag){
 	foundNA = 1;
-	
+	break;
       }
     } else {
       results[j]+=*value;
@@ -2739,7 +2741,7 @@ void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
 static void dbm_singlecolSums(doubleBufferedMatrix Matrix,int j,int naflag,double *results){
   int i;
   double *value;
-  int foundNA;
+  int foundNA=0;
 
   results[j] = 0.0;
 
@@ -2747,21 +2749,13 @@ static void dbm_singlecolSums(doubleBufferedMatrix Matrix,int j,int naflag,doubl
     value = dbm_internalgetValue(Matrix,i,j);
     if (ISNAN(*value)){
       if (!naflag){
-	foundNA = 1;
-	
+	results[j] = R_NaReal;
+	return;
       }
     } else {
       results[j]+=*value;
     }
   }
-  
-  
-  if (foundNA){
-    results[j] = R_NaReal;
-  } 
-
-
-
 }
 
 
@@ -2867,14 +2861,19 @@ static void dbm_singlecolVars(doubleBufferedMatrix Matrix,int j,int naflag,doubl
   int i;
   double *value;
   
-  int foundNA;
-  int counts;
+  int foundNA=0;
+  int counts=0;
   double means;
 
 
 
     means = *dbm_internalgetValue(Matrix,0,j); 
     if (ISNAN(means)){ 
+      if (!naflag){
+	results[j] = R_NaReal;
+	return;
+      }
+
       foundNA+= 1;
       results[j] = 0.0;
       means = 0.0;
@@ -2886,6 +2885,11 @@ static void dbm_singlecolVars(doubleBufferedMatrix Matrix,int j,int naflag,doubl
     for (i=1; i < Matrix->rows; i++){
       value = dbm_internalgetValue(Matrix,i,j);  
       if (ISNAN(*value)){
+	if (!naflag){
+	  results[j] = R_NaReal;
+	  return;
+	}
+
 	foundNA += 1; 
       } else {
 	results[j] = results[j] + (double)(counts -1)*(*value - means)*(*value - means)/(double)(counts);
@@ -3015,7 +3019,6 @@ void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results){
 
 static void dbm_singlecolMax(doubleBufferedMatrix Matrix,int j, int naflag,double *results){
   
-  int isNA=0;
   int i;
   double *value;
   
@@ -3023,31 +3026,24 @@ static void dbm_singlecolMax(doubleBufferedMatrix Matrix,int j, int naflag,doubl
   if (ISNAN(results[j])){
     if (!naflag){
       results[j] = R_NaReal;
+      return;
     } else {
       results[j] = R_NegInf;
     }
-    isNA =1;
-    
   }
   for (i=1; i < Matrix->rows; i++){
     value = dbm_internalgetValue(Matrix,i,j);
     if (ISNAN(*value)){
       if (!naflag){
 	results[j] = R_NaReal;
+	return;
       }
     } else {
       if (results[j] < *value){
 	results[j]=*value;
       }
-      if (isNA){
-	isNA = 0;
-      }
     }
   }
-  if (isNA){
-    results[j] = R_NaReal;
-  }
-  isNA = 0;
 }
 
 
@@ -3155,7 +3151,6 @@ void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results){
 
 
 static void dbm_singlecolMin(doubleBufferedMatrix Matrix,int j,int naflag,double *results){
-  int isNA=0;
   int i;
   double *value;
   
@@ -3163,31 +3158,24 @@ static void dbm_singlecolMin(doubleBufferedMatrix Matrix,int j,int naflag,double
   if (ISNAN(results[j])){
     if (!naflag){
       results[j] = R_NaReal;
+      return;
     } else {
       results[j] = R_PosInf;
     }
-    isNA =1;
-    
   }
   for (i=1; i < Matrix->rows; i++){
       value = dbm_internalgetValue(Matrix,i,j);
       if (ISNAN(*value)){
 	if (!naflag){
 	  results[j] = R_NaReal;
+	  return;
 	}
       } else {
 	if (results[j] > *value){
 	  results[j]=*value;
 	}
-	if (isNA){
-	  isNA = 0;
-	}
       }
   }
-  if (isNA){
-    results[j] = R_NaReal;
-  }
-  isNA = 0;
 }
 
 
@@ -3227,7 +3215,212 @@ void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results){
 }
 
 
+/**********************************************************
+ **
+ ** int sort_double(const void *a1,const void *a2)
+ **
+ ** a comparison function used when sorting doubles.
+ **
+ **********************************************************/
+
+static int sort_double(const double *a1,const double *a2){
+  if (*a1 < *a2)
+    return (-1);
+  if (*a1 > *a2)
+    return (1);
+  return 0;
+}
 
 
 
+
+static void dbm_singlecolMedian(doubleBufferedMatrix Matrix,int j,int naflag,double *results){
+
+  int isNA=0;
+  int i, i_nonNA=0;
+  double *value;
+  double *buffer = Calloc(Matrix->rows,double);
+  
+
+  for (i=0; i < Matrix->rows; i++){
+    value = dbm_internalgetValue(Matrix,i,j);
+    if (ISNAN(*value)){
+      if (!naflag){
+	Free(buffer);
+	results[j] = R_NaReal;
+	return;
+      } 
+    } else {
+      buffer[i_nonNA] = *value;
+      i_nonNA++;
+    }
+  }
+
+  qsort(buffer,i_nonNA,sizeof(double),(int(*)(const void*, const void*))sort_double);
+  
+  
+  if ((i_nonNA % 2) == 1){
+    results[j] = buffer[(i_nonNA-1)/2];
+  } else { 
+    results[j] = (buffer[(i_nonNA)/2-1] + buffer[(i_nonNA)/2])/2.0;
+  }
+  
+  Free(buffer);
+
+
+}
+
+
+
+
+void dbm_colMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
+  int j;
+ 
+  int *BufferContents;
+  int *colsdone;
+  
+  BufferContents= dbm_whatsInColumnBuffer(Matrix);
+
+  colsdone = Calloc(Matrix->cols,int);
+
+  if (Matrix->cols > Matrix->max_cols){
+    /* Matrix doesn't have all the columns in the buffer */
+
+    /* First do the columns currently in the buffer */
+    for (j=0; j < Matrix->max_cols; j++){
+      dbm_singlecolMedian(Matrix,BufferContents[j],naflag,results);
+      colsdone[BufferContents[j]] = 1;
+    }
+    
+    /* now read in what we need to read in */
+    for (j=0; j < Matrix->cols; j++){
+      if (colsdone[j] == 0){
+	dbm_singlecolMedian(Matrix,j,naflag,results);
+      }
+    }
+  } else {
+    for (j=0; j < Matrix->cols; j++){
+      dbm_singlecolMedian(Matrix,j,naflag,results);
+    }
+  }
+  Free(colsdone);
+
+}
+
+
+
+
+static void dbm_singlecolRange(doubleBufferedMatrix Matrix,int j,int naflag,int finite, double *results){
+
+  int i,start_ind;
+  double *value, *value1;
+  
+  /* Min is stored in results[0 , 2, ... 2*(Matrix->cols-1)] */
+  /* Max is stored in results[1, 3,  ... ,2*Matrix->cols -1] */
+
+
+  results[j*2] = *dbm_internalgetValue(Matrix,0,j);
+  results[j*2+1] = results[j*2];
+
+  if (ISNAN(results[j*2])){
+    if (!naflag){
+      results[j*2] = R_NaReal;
+      results[j*2 + 1] = R_NaReal;
+      return;
+    } else {
+      results[j*2] = R_PosInf;
+      results[j*2 + 1] = R_NegInf;
+    }
+    
+  }
+  if ((Matrix->rows %2) ==0){
+    start_ind = 0;
+  } else {
+    start_ind = 1;
+  }
+
+
+
+
+  for (i=start_ind; i < Matrix->rows; i=i+2){
+      value = dbm_internalgetValue(Matrix,i,j);
+      value1 = dbm_internalgetValue(Matrix,i+1,j);
+      if (ISNAN(*value) || ISNAN(*value1)){
+	if (!naflag){
+	  results[j*2] = R_NaReal;
+	  results[j*2 + 1] = R_NaReal;
+	  return;
+	} else if (ISNAN(*value) && !ISNAN(*value1)){
+	  /* value1 is the non NA one */
+	  if (*value1 > results[j*2 + 1]){
+	    results[j*2 + 1] = *value1;
+	  }
+	  if (*value1 < results[j*2]){
+	    results[j*2] = *value1;
+	  }
+	}  else {
+	  /* value is the non NA one */
+	  if (*value > results[j*2 + 1]){
+	    results[j*2 + 1] = *value;
+	  }
+	  if (*value < results[j*2]){
+	    results[j*2] = *value;
+	  }
+	}
+      } else {
+	
+	if (*value < *value1){
+	  if (*value < results[j*2]){
+	    results[j*2] = *value;
+	  }
+	  if (*value1 > results[j*2 + 1]){
+	    results[j*2 + 1] = *value1;
+	  }
+	} else {
+	  if (*value > results[j*2 + 1]){
+	    results[j*2 + 1] = *value;
+	  }
+	  if (*value1 < results[j*2]){
+	    results[j*2] = *value1;
+	  }
+	}
+      }
+  }
+}
+
+
+
+void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *results){
+  int j;
+ 
+  int *BufferContents;
+  int *colsdone;
+  
+  BufferContents= dbm_whatsInColumnBuffer(Matrix);
+
+  colsdone = Calloc(Matrix->cols,int);
+
+  if (Matrix->cols > Matrix->max_cols){
+    /* Matrix doesn't have all the columns in the buffer */
+
+    /* First do the columns currently in the buffer */
+    for (j=0; j < Matrix->max_cols; j++){
+      dbm_singlecolRange(Matrix,BufferContents[j],naflag,finite,results);
+      colsdone[BufferContents[j]] = 1;
+    }
+    
+    /* now read in what we need to read in */
+    for (j=0; j < Matrix->cols; j++){
+      if (colsdone[j] == 0){
+	dbm_singlecolRange(Matrix,j,naflag,finite,results);
+      }
+    }
+  } else {
+    for (j=0; j < Matrix->cols; j++){
+      dbm_singlecolRange(Matrix,j,naflag,finite,results);
+    }
+  }
+  Free(colsdone);
+
+}
 

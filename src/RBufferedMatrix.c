@@ -20,6 +20,8 @@
  **                 Added functionality for checking whether a we have a BufferedMatrix or not
  **                 Add R_bm_MakeSubmatrix
  **  Oct 3, 2006 - add R_bm_as_BufferedMatrix   
+ **  Oct 21, 2006 - add R_bm_colMedians
+ **  Oct 22, 2006 - add R_bm_colRanges
  **
  *****************************************************/
 
@@ -1851,6 +1853,69 @@ SEXP R_bm_colMin(SEXP R_BufferedMatrix,SEXP removeNA){
   return returnvalue;
 
 }
+
+
+
+
+SEXP R_bm_colMedians(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_colMedians(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+SEXP R_bm_colRanges(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag,FiniteFlag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocMatrix(REALSXP,2,dbm_getCols(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+  FiniteFlag = LOGICAL(removeNA)[0];
+
+  dbm_colRanges(Matrix,NAflag,FiniteFlag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+
 
 
 

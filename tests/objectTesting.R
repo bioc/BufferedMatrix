@@ -874,3 +874,5 @@ dimnames(tmp)
 
 ReadOnlyMode(tmp)
 is.ReadOnlyMode(tmp)
+
+filenames(tmp)

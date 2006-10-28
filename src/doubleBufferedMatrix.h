@@ -50,6 +50,10 @@ int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
 
 char *dbm_getPrefix(doubleBufferedMatrix Matrix);
 char *dbm_getDirectory(doubleBufferedMatrix Matrix);
+char *dbm_getFileName(doubleBufferedMatrix Matrix, int col);
+
+int dbm_setDirectory(doubleBufferedMatrix Matrix, char *newdirectory);
+
 
 int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matrix_source);
 int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),double *fn_param);
@@ -76,5 +80,7 @@ void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_colMedians(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *results);
 
+double dbm_fileSpaceInUse(doubleBufferedMatrix Matrix);
+int dbm_memoryInUse(doubleBufferedMatrix Matrix);
 
 #endif

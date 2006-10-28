@@ -28,6 +28,7 @@
  **  Jul 17, 2006 - better buffer usage in dbm_getValueRow, dbm_setValueRow, dbm_ewApply
  **  Oct 21, 2006 - add dbm_colMedians
  **  Oct 22, 2006 - add dbm_colRanges, cleaned up some of the NA handling in colSums, colMeans
+ **  Oct 27, 2006 - add dbm_getFileName, dbm_fileSpaceInUse, dbm_memoryInUse
  **
  *****************************************************/
 
@@ -2088,6 +2089,65 @@ char *dbm_getDirectory(doubleBufferedMatrix Matrix){
 
 
 
+char *dbm_getFileName(doubleBufferedMatrix Matrix, int col){
+  
+  char *returnvalue;
+  int len = strlen(Matrix->filenames[col]);
+
+  returnvalue = Calloc(len+1,char);
+
+  strcpy(returnvalue,Matrix->filenames[col]);
+
+  return returnvalue;
+
+
+
+}
+
+
+
+
+/* Changes the directory into which the temporary files are stored */
+
+int dbm_setDirectory(doubleBufferedMatrix Matrix, char *newdirectory){
+
+  char *directory;
+  char *olddirectory;
+  char *tmp, *temp_name;
+  int i;
+
+
+  int len = strlen(newdirectory);
+
+  directory = Calloc(len+1,char);
+
+  strcpy(directory,newdirectory);
+
+  olddirectory = Matrix->filedirectory;
+
+  for (i =0; i < Matrix->cols; i++){
+    temp_name = (char *)R_tmpnam(Matrix->fileprefix,newdirectory);
+
+    tmp = Calloc(strlen(temp_name)+1,char);
+    strcpy(tmp,temp_name);
+
+    rename(Matrix->filenames[i], tmp);
+    Matrix->filenames[i] = tmp;
+    Free(temp_name);
+  }
+
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
 int dbm_copyValues(doubleBufferedMatrix Matrix_target,doubleBufferedMatrix Matrix_source){
 
   int i, j;
@@ -3424,3 +3484,70 @@ void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *r
 
 }
 
+
+
+
+
+
+
+
+int dbm_memoryInUse(doubleBufferedMatrix Matrix){
+
+
+  int i;
+  int object_size =0;
+
+  /* this is the size of the storage object itself */
+  object_size+= 10*sizeof(int) + 3*sizeof(double**) + 2*sizeof(char *) + sizeof(int *) + sizeof(char **);
+
+  /* Now start adding in things that are of variable size and stored in the object */
+
+  /* first deal with the column buffer */
+  
+  if (Matrix->cols < Matrix->max_cols){
+    object_size+= Matrix->cols*sizeof(double *);
+    object_size+= Matrix->cols*Matrix->rows*sizeof(double);
+    object_size+= Matrix->cols*sizeof(int);
+  } else {
+    object_size+= Matrix->max_cols*sizeof(double *);
+    object_size+= Matrix->max_cols*Matrix->rows*sizeof(double);
+    object_size+= Matrix->max_cols*sizeof(int);
+  }
+
+  /* Now the row buffer */
+  if (!Matrix->colmode){
+    object_size+= Matrix->cols*sizeof(double *);
+    if (Matrix->rows < Matrix->max_rows){
+      object_size+= Matrix->rows*Matrix->max_rows*sizeof(double);
+    } else {
+      object_size+= Matrix->cols*Matrix->max_rows*sizeof(double);
+    }
+  }
+  
+  
+  /* the strings */
+  object_size+=strlen(Matrix->fileprefix) + 1;
+  object_size+=strlen(Matrix->filedirectory) + 1;
+  
+  object_size+= Matrix->cols*sizeof(char *);
+  for (i=0; i < Matrix->cols; i++){
+    object_size+=strlen(Matrix->filenames[i]) +1;
+  }
+  
+  
+  return object_size;
+
+
+
+
+
+
+}
+
+
+
+double dbm_fileSpaceInUse(doubleBufferedMatrix Matrix){
+  
+  return (double)(Matrix->rows)*(double)Matrix->cols*(double)sizeof(double);
+
+}

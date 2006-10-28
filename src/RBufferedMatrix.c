@@ -22,6 +22,7 @@
  **  Oct 3, 2006 - add R_bm_as_BufferedMatrix   
  **  Oct 21, 2006 - add R_bm_colMedians
  **  Oct 22, 2006 - add R_bm_colRanges
+ **  Oct 27, 2006 - add R_bm_getFileNames
  **
  *****************************************************/
 
@@ -2321,6 +2322,113 @@ SEXP R_bm_as_BufferedMatrix(SEXP R_BufferedMatrix, SEXP RMatrix){
   return R_BufferedMatrix;
 
 }
+
+
+
+
+
+
+
+
+
+SEXP R_bm_getFileNames(SEXP R_BufferedMatrix){
+
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int i;
+
+
+  char *filename;
+
+  
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+  
+  if (Matrix == NULL){
+    return R_BufferedMatrix;
+  }
+
+
+  PROTECT(returnvalue = allocVector(STRSXP,dbm_getCols(Matrix)));
+
+
+  for (i =0; i < dbm_getCols(Matrix); i++){
+
+    filename = dbm_getFileName(Matrix,i);
+    SET_VECTOR_ELT(returnvalue,i,mkChar(filename));
+    Free(filename);
+  }
+  UNPROTECT(1);
+  return returnvalue;
+
+}
+
+
+
+
+
+SEXP R_bm_memoryInUse(SEXP R_BufferedMatrix){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix; 
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_getSize");
+  }
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+  
+  
+  PROTECT(returnvalue=allocVector(INTSXP,1));
+
+  if (Matrix == NULL){ 
+
+    INTEGER(returnvalue)[0] = 0;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+  
+  INTEGER(returnvalue)[0] = dbm_memoryInUse(Matrix);
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
+
+
+
+
+SEXP R_bm_fileSpaceInUse(SEXP R_BufferedMatrix){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix; 
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_getSize");
+  }
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+  
+  
+  PROTECT(returnvalue=allocVector(REALSXP,1));
+
+  if (Matrix == NULL){ 
+
+    NUMERIC_POINTER(returnvalue)[0] = 0.0;
+    UNPROTECT(1);
+    return returnvalue;
+  }
+  
+  NUMERIC_POINTER(returnvalue)[0] = dbm_fileSpaceInUse(Matrix);
+  UNPROTECT(1);
+  return returnvalue;
+
+
+}
+
+
 
 
 

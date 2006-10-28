@@ -33,6 +33,10 @@
 
 \alias{ReadOnlyMode}
 \alias{is.ReadOnlyMode}
+\alias{filenames}
+\alias{disk.usage}
+\alias{memory.usage}
+
 
 \alias{subBufferedMatrix}
 
@@ -96,6 +100,9 @@
 
 \alias{ReadOnlyMode,BufferedMatrix-method}
 \alias{is.ReadOnlyMode,BufferedMatrix-method}
+\alias{filenames,BufferedMatrix-method}
+\alias{disk.usage,BufferedMatrix-method}
+\alias{memory.usage,BufferedMatrix-method}
 
 \title{Class BufferedMatrix}
 
@@ -161,6 +168,12 @@
   \item{directory}{\code{signature(object = "BufferedMatrix")}:
     return the location where temporary files are stored
   }
+
+  \item{filenames}{\code{signature(object = "BufferedMatrix")}:
+    return the fully pathed filenames for each column in the matrix
+  }
+
+  
   \item{ewApply}{\code{signature(object = "BufferedMatrix")}:
     apply a function elementwise
   } 
@@ -305,7 +318,14 @@
     Finds out if it is in Read Only Mode
   }
 
-  
+  \item{memory.usage}{\code{signature(object = "BufferedMatrix")} :
+    Give amount of RAM currently in use by BufferedMatrix object
+  }
+
+ \item{disk.usage}{\code{signature(object = "BufferedMatrix")} :
+    Give amount of disk space currently in use by BufferedMatrix object
+  }
+
   
   
   

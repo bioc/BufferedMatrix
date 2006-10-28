@@ -9,3 +9,4 @@ Oct 3, 2006: Make as.BufferedMatrix call a C routine to do the work.
 Oct 6, 2006: allow as.BufferedMatrix a little more control over the created buffered matrix
 Oct 21, 2006: add colMedians
 Oct 22, 2006: add colRanges
+Oct 27, 2006: add filenames, memory.usage,disk.usage. Memory usage/Disk usage is now also given by show method

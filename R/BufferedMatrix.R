@@ -21,6 +21,7 @@
 ##                 but were never had methods implemented)
 ## Oct 21, 2006  - add colMedians
 ## Oct 22, 2006  - add colRanges
+## Oct 27, 2006  - add filenames method, memory.usage method
 
 
 setClass("BufferedMatrix",
@@ -342,6 +343,29 @@ setMethod("show", "BufferedMatrix", function(object){
   cat("Read Only: ")
   cat(is.ReadOnlyMode(object))
   cat("\n")
+
+  mem.usage <- memory.usage(object)
+
+  if (mem.usage < 1024){
+    cat("Memory usage : ",mem.usage," bytes.\n")
+  } else if (mem.usage < 1024^2) {
+    cat("Memory usage : ",round(mem.usage/1024,1)," Kilobytes.\n")
+  } else {
+    cat("Memory usage : ",round(mem.usage/1024^2,2)," Megabytes.\n")
+  }
+  
+  disk.space.used <- disk.usage(object)
+  if (disk.space.used < 1024){
+    cat("Disk usage : ",disk.space.used," bytes.\n")
+  } else if (mem.usage < 1024^2) {
+    cat("Disk usage : ",round(disk.space.used/1024,1)," Kilobytes.\n")
+  } else {
+    cat("Disk usage : ",round(disk.space.used/1024^2,2)," Megabytes.\n")
+  }
+
+  
+
+
   
 })
 
@@ -443,6 +467,19 @@ setMethod("directory","BufferedMatrix",function(x){
 
   
 })
+
+
+
+
+if (!isGeneric("filenames"))
+  setGeneric("filenames",function(x)
+             standardGeneric("filenames"))
+
+
+setMethod("filenames","BufferedMatrix",function(x){
+  .Call("R_bm_getFileNames",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
+})
+
 
 
 
@@ -1360,3 +1397,28 @@ setMethod("is.ReadOnlyMode","BufferedMatrix",function(x){
 
 })
 
+
+
+
+if (!isGeneric("memory.usage"))
+  setGeneric("memory.usage",function(x)
+             standardGeneric("memory.usage"))
+
+
+setMethod("memory.usage","BufferedMatrix",function(x){
+
+  .Call("R_bm_memoryInUse",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
+})
+
+
+
+
+if (!isGeneric("disk.usage"))
+  setGeneric("disk.usage",function(x)
+             standardGeneric("disk.usage"))
+
+
+setMethod("disk.usage","BufferedMatrix",function(x){
+
+  .Call("R_bm_fileSpaceInUse",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
+})

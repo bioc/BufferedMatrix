@@ -868,6 +868,38 @@ dimnames(tmp) <- list(NULL,c(colnames(tmp,do.NULL=FALSE)))
 dimnames(tmp)
 
 
+
+###
+### Testing logical indexing
+###
+###
+
+tmp <- createBufferedMatrix(230,15)
+tmp[1:230,1:15] <- rnorm(230*15)
+x <-tmp[1:230,1:15]  
+
+for (rep in 1:10){
+  which.cols <- sample(c(TRUE,FALSE),15,replace=T)
+  which.rows <- sample(c(TRUE,FALSE),230,replace=T)
+  
+  if (!all(tmp[which.rows,which.cols] == x[which.rows,which.cols])){
+    stop("No agreement when logical indexing\n")
+  }
+  
+  if (!all(subBufferedMatrix(tmp,,which.cols)[,1:sum(which.cols)] ==  x[,which.cols])){
+    stop("No agreement when logical indexing in subBufferedMatrix cols\n")
+  }
+  if (!all(subBufferedMatrix(tmp,which.rows,)[1:sum(which.rows),] ==  x[which.rows,])){
+    stop("No agreement when logical indexing in subBufferedMatrix rows\n")
+  }
+  
+  
+  if (!all(subBufferedMatrix(tmp,which.rows,which.cols)[1:sum(which.rows),1:sum(which.cols)]==  x[which.rows,which.cols])){
+    stop("No agreement when logical indexing in subBufferedMatrix rows and columns\n")
+  }
+}
+
+
 ##
 ## Test the ReadOnlyMode
 ##

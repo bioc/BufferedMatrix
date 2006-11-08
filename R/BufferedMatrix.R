@@ -60,6 +60,11 @@ setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
       } else {
         i <- which.i
       }
+    } else if (is.logical(i)){
+      if (length(i) != dim(x)[1]){
+        stop("Incorrect length logical indexing vector should match number of rows.")
+      }
+      i <- which(i)
     }
   }
 
@@ -73,6 +78,11 @@ setMethod("[", "BufferedMatrix", function(x, i, j,..., drop=FALSE) {
       } else {
         j <- which.j
       }
+    } else if (is.logical(j)){
+      if (length(j) != dim(x)[2]){
+        stop("Incorrect length logical indexing vector should match number of columns.")
+      }
+      j <- which(j)
     }
   }
 
@@ -231,6 +241,11 @@ setReplaceMethod("[", "BufferedMatrix", function(x, i, j,..., value){
       } else {
         i <- which.i
       }
+    } else if (is.logical(i)){
+      if (length(i) != dim(x)[1]){
+        stop("Incorrect length logical indexing vector should match number of rows.")
+      }
+      i <- which(i)
     }
   }
 
@@ -244,6 +259,11 @@ setReplaceMethod("[", "BufferedMatrix", function(x, i, j,..., value){
       } else {
         j <- which.j
       }
+    } else if (is.logical(j)){
+      if (length(j) != dim(x)[2]){
+        stop("Incorrect length logical indexing vector should match number of columns.")
+      }
+      j <- which(j)
     }
   }
 
@@ -1035,6 +1055,11 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
       } else {
         i <- which.i
       }
+    } else if (is.logical(i)){
+      if (length(i)!= dim(x)[1]){
+        stop("Incorrect length logical indexing vector should match number of columns.")
+      }
+      i <- which(i)
     }
   }
 
@@ -1048,6 +1073,11 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
       } else {
         j <- which.j
       }
+    } else if (is.logical(j)){
+      if (length(j) != dim(x)[2]){
+        stop("Incorrect length logical indexing vector should match number of columns.")
+      }
+      j <- which(j)
     }
   }
 

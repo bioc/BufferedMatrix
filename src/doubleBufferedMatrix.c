@@ -29,6 +29,7 @@
  **  Oct 21, 2006 - add dbm_colMedians
  **  Oct 22, 2006 - add dbm_colRanges, cleaned up some of the NA handling in colSums, colMeans
  **  Oct 27, 2006 - add dbm_getFileName, dbm_fileSpaceInUse, dbm_memoryInUse
+ **  Nov 12, 2006 - make fwrite, fread return values get checked. Fix various compiler warnings.
  **
  *****************************************************/
 
@@ -383,7 +384,10 @@ static int dbm_InColBuffer(doubleBufferedMatrix Matrix,int row, int col, int *wh
 static int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix){
 
 
-  int j,k;
+  int j;
+  
+  int blocks_written;
+
   const char *mode2 ="rb+";
   FILE *myfile;
 
@@ -393,8 +397,11 @@ static int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix){
       return 1;
     }
     fseek(myfile,Matrix->first_rowdata*sizeof(double),SEEK_SET);
-    fwrite(&(Matrix->rowdata)[j][0],sizeof(double),Matrix->max_rows,myfile);
+    blocks_written = fwrite(&(Matrix->rowdata)[j][0],sizeof(double),Matrix->max_rows,myfile);
     fclose(myfile);
+    if (blocks_written != Matrix->max_rows){
+      return 1;
+    }
   } 
   return 0;
 }
@@ -415,7 +422,8 @@ static int dbm_FlushRowBuffer(doubleBufferedMatrix Matrix){
 
 static int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix){
 
-  int j,k;
+  int blocks_written;
+  
   const char *mode2 ="rb+";
   FILE *myfile;
   
@@ -426,9 +434,12 @@ static int dbm_FlushOldestColumn(doubleBufferedMatrix Matrix){
   }
 
   fseek(myfile,0,SEEK_SET); 
-  fwrite(Matrix->coldata[0],sizeof(double),Matrix->rows,myfile);
+  blocks_written = fwrite(Matrix->coldata[0],sizeof(double),Matrix->rows,myfile);
   fclose(myfile);  
-
+  if (blocks_written != Matrix->rows){
+      return 1;
+  }
+  
   return 0;
 
 }
@@ -454,7 +465,10 @@ static int dbm_FlushAllColumns(doubleBufferedMatrix Matrix){
 
 
 
-  int k,lastcol;
+  int k,lastcol;  
+
+  int blocks_written;
+  
   const char *mode2 ="rb+";
   FILE *myfile;
  
@@ -471,8 +485,12 @@ static int dbm_FlushAllColumns(doubleBufferedMatrix Matrix){
       return 1;
     }
     fseek(myfile,0,SEEK_SET); 
-    fwrite(Matrix->coldata[k],sizeof(double),Matrix->rows,myfile);
+    blocks_written = fwrite(Matrix->coldata[k],sizeof(double),Matrix->rows,myfile);
     fclose(myfile);  
+    if (blocks_written != Matrix->rows){
+      return 1;
+    }
+ 
   }
 
   return 0;
@@ -503,7 +521,7 @@ static int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
   double *tmpptr;
   int lastcol;
   int j;
-
+  int blocks_read;
 
   if (Matrix->cols < Matrix->max_cols){
     lastcol = Matrix->cols;
@@ -527,8 +545,13 @@ static int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
     return 1;
   }
   fseek(myfile,0,SEEK_SET);
-  fread(Matrix->coldata[lastcol -1],sizeof(double),Matrix->rows,myfile);
+  blocks_read = fread(Matrix->coldata[lastcol -1],sizeof(double),Matrix->rows,myfile);
   fclose(myfile);
+
+  if (blocks_read != Matrix->rows){
+    return 1;
+  }
+
 
   return 0;
   
@@ -556,8 +579,6 @@ static int dbm_LoadNewColumn(doubleBufferedMatrix Matrix,int col){
 
 static int dbm_LoadNewColumn_nofill(doubleBufferedMatrix Matrix,int col){
   
-  const char *mode = "rb";
-  FILE *myfile;
   double *tmpptr;
   int lastcol;
   int j;
@@ -611,6 +632,8 @@ static int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row){
   int j,k;
   int lastcol;
   int curcol;
+  int blocks_read;
+
 
 
   if (Matrix->cols < Matrix->max_cols){
@@ -634,9 +657,14 @@ static int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row){
 
 
     fseek(myfile,Matrix->first_rowdata*sizeof(double),SEEK_SET);
-    fread(&(Matrix->rowdata)[j][0],sizeof(double),Matrix->max_rows,myfile);
+    blocks_read = fread(&(Matrix->rowdata)[j][0],sizeof(double),Matrix->max_rows,myfile);
 
     fclose(myfile);  
+
+    if (blocks_read != Matrix->max_rows){
+      return 1;
+    }
+
   }
   
   for (j =0; j < Matrix->cols; j++){
@@ -678,15 +706,21 @@ static int dbm_LoadRowBuffer(doubleBufferedMatrix Matrix,int row){
 static int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int where){
   const char *mode = "rb";
   FILE *myfile;
-   
+  int blocks_read;
+
   Matrix->coldata[where] = Calloc(Matrix->rows,double);
   Matrix->which_cols[where] = col;
   myfile = fopen(Matrix->filenames[col],mode);
   if (myfile == NULL)
     return 1;
   fseek(myfile,0,SEEK_SET);
-  fread(Matrix->coldata[where],sizeof(double),Matrix->rows,myfile);
+  blocks_read = fread(Matrix->coldata[where],sizeof(double),Matrix->rows,myfile);
   fclose(myfile);
+
+  if (blocks_read != Matrix->rows)
+    return 1;
+
+
   return 0;
 }
 
@@ -706,17 +740,9 @@ static double *dbm_internalgetValue(doubleBufferedMatrix Matrix,int row, int col
   
   int whichcol = col;
   int whichrow = row;
-  int lastcol;
+ 
   int curcol;
-  int j,k;
-
-  const char *mode = "rb";
-  const char *mode2 ="rb+";
-  FILE *myfile;
-
-  double *tmpptr;
-  
-
+ 
 
   if (!(Matrix->colmode)){
     /* Fix up any potential clashes */
@@ -934,7 +960,7 @@ int dbm_free(doubleBufferedMatrix Matrix){
   Free(handle->filedirectory);
 
   Free(handle);
-
+  return 0;
 }
 
 
@@ -992,10 +1018,10 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
   
   FILE *myfile;
-  int j,i;
+  int j;
   int which_col_num;
-  int fd;
 
+  int blocks_written;
   
   /* Handle the housekeeping of indices, clearing buffer if needed etc */
   if (Matrix->cols < Matrix->max_cols){
@@ -1056,8 +1082,13 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
  
     /* Before we deallocate, better empty the column buffer */
     myfile = fopen(Matrix->filenames[Matrix->which_cols[0]],"rb+");
-    fwrite(&temp_col[0],sizeof(double),Matrix->rows,myfile);
+    blocks_written = fwrite(&temp_col[0],sizeof(double),Matrix->rows,myfile);
     fclose(myfile); 
+    
+    if (blocks_written != Matrix->rows){
+      return 1;
+    }
+
     
     for (j =1; j < Matrix->max_cols; j++){
       Matrix->which_cols[j-1] = Matrix->which_cols[j];
@@ -1135,7 +1166,12 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
   if (!myfile){
     return 1;            /** Bad error **/
   }
-  fwrite(Matrix->coldata[which_col_num],sizeof(double),  Matrix->rows, myfile);
+  blocks_written = fwrite(Matrix->coldata[which_col_num],sizeof(double),  Matrix->rows, myfile);
+
+  if (blocks_written != Matrix->rows){
+    return 1;
+  }
+
   fclose(myfile);
   Matrix->cols++;
 
@@ -1308,8 +1344,10 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
 
 
   int i, j;
-  int n_rows_remove=0;
-  int n_rows_add=0; 
+  /* 
+     int n_rows_remove=0;
+     int n_rows_add=0;
+  */
   double *tmpptr;
   int new_first_rowdata;
 
@@ -1418,7 +1456,7 @@ int dbm_ResizeBuffer(doubleBufferedMatrix Matrix, int new_maxrow, int new_maxcol
       Matrix->max_rows = new_maxrow;
     } 
   }
-
+  return 0;
 }
 
 
@@ -2177,7 +2215,7 @@ int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),doub
 
 
   int i, j;
-  double *value, *tmp;
+  double *value; 
 
   int *BufferContents;
   int *colsdone;
@@ -2801,7 +2839,7 @@ void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
 static void dbm_singlecolSums(doubleBufferedMatrix Matrix,int j,int naflag,double *results){
   int i;
   double *value;
-  int foundNA=0;
+
 
   results[j] = 0.0;
 
@@ -3108,10 +3146,8 @@ static void dbm_singlecolMax(doubleBufferedMatrix Matrix,int j, int naflag,doubl
 
 
 void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results){
-  int i,j;
-  double *value;
-  int isNA=0;
-    
+  int j;
+      
 
 
   int *BufferContents;
@@ -3296,7 +3332,6 @@ static int sort_double(const double *a1,const double *a2){
 
 static void dbm_singlecolMedian(doubleBufferedMatrix Matrix,int j,int naflag,double *results){
 
-  int isNA=0;
   int i, i_nonNA=0;
   double *value;
   double *buffer = Calloc(Matrix->rows,double);

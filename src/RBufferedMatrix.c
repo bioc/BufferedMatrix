@@ -23,6 +23,7 @@
  **  Oct 21, 2006 - add R_bm_colMedians
  **  Oct 22, 2006 - add R_bm_colRanges
  **  Oct 27, 2006 - add R_bm_getFileNames
+ **  Nov 12, 2006 - fix some compiler warnings
  **
  *****************************************************/
 
@@ -553,7 +554,7 @@ SEXP R_bm_isReadOnlyMode(SEXP R_BufferedMatrix){
   SEXP returnvalue;
 
   doubleBufferedMatrix Matrix;
-  int current_mode;
+  int current_mode=0;
  
   if(!checkBufferedMatrix(R_BufferedMatrix)){
     error("Invalid ExternalPointer supplied to R_bm_isReadOnlyMode");
@@ -935,9 +936,6 @@ SEXP R_bm_getValueSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
   int i,j;
   int nrows,ncols;
 
-  double tempbuffer;
-
-
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
 
   nrows = length(R_row);
@@ -997,7 +995,7 @@ SEXP R_bm_setValueColumn(SEXP R_BufferedMatrix, SEXP R_col, SEXP value){
   
   SEXP returnvalue;
   doubleBufferedMatrix Matrix;
-  int i,j;
+
   int ncols;
 
 
@@ -1039,9 +1037,9 @@ SEXP R_bm_setValueRow(SEXP R_BufferedMatrix, SEXP R_row, SEXP value){
   
   SEXP returnvalue;
   doubleBufferedMatrix Matrix;
-  int i,j;
+
   int nrows;
-  double *tempbuffer;
+
     
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
@@ -1197,7 +1195,7 @@ SEXP R_bm_copyValues(SEXP R_BufferedMatrix_target, SEXP R_BufferedMatrix_source)
   doubleBufferedMatrix Matrix_target;
   doubleBufferedMatrix Matrix_source;
 
-  char *directory;
+  /*  char *directory = NULL; */
 
   
   Matrix_target =  R_ExternalPtrAddr(R_BufferedMatrix_target);
@@ -1255,7 +1253,7 @@ SEXP R_bm_ewApply(SEXP R_BufferedMatrix, SEXP Rfn, SEXP rho){
   SEXP returnvalue;
 
   doubleBufferedMatrix Matrix;
-  int i,j;
+  int j;
 
 
     
@@ -1931,7 +1929,7 @@ SEXP R_bm_colApply(SEXP R_BufferedMatrix, SEXP return_dim, SEXP Rfn, SEXP rho){
   SEXP result;
 
   doubleBufferedMatrix Matrix;
-  int i,j;
+  int j;
 
 
   
@@ -2033,7 +2031,7 @@ SEXP R_bm_rowApply(SEXP R_BufferedMatrix, SEXP return_dim, SEXP Rfn, SEXP rho){
   SEXP result;
 
   doubleBufferedMatrix Matrix;
-  int i,j;
+  int i;
 
 
   
@@ -2122,7 +2120,7 @@ SEXP R_bm_rowApply(SEXP R_BufferedMatrix, SEXP return_dim, SEXP Rfn, SEXP rho){
 SEXP R_bm_as_matrix(SEXP R_BufferedMatrix){
 
   doubleBufferedMatrix Matrix;
-  int NAflag;
+
   int rows, cols;
   int j;
 
@@ -2293,13 +2291,13 @@ SEXP R_bm_MakeSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
 SEXP R_bm_as_BufferedMatrix(SEXP R_BufferedMatrix, SEXP RMatrix){
 
   doubleBufferedMatrix Matrix;
-  int NAflag;
+  
   int rows, cols;
   int j;
 
-  int rows_RMatrix;
-  int cols_RMatrix;
-
+  /*  int rows_RMatrix;
+      int cols_RMatrix; */
+  
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
 

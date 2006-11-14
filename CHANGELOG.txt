@@ -12,3 +12,4 @@ Oct 22, 2006: add colRanges
 Oct 27, 2006: add filenames, memory.usage,disk.usage. Memory usage/Disk usage is now also given by show method
 Nov 7, 2006: add logical indexing ability
 Nov 9, 2006: make c level interface exportable so it can be used in other packages
+Nov 13, 2006: make colMedians more efficient.

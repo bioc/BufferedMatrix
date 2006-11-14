@@ -30,6 +30,7 @@
  **  Oct 22, 2006 - add dbm_colRanges, cleaned up some of the NA handling in colSums, colMeans
  **  Oct 27, 2006 - add dbm_getFileName, dbm_fileSpaceInUse, dbm_memoryInUse
  **  Nov 12, 2006 - make fwrite, fread return values get checked. Fix various compiler warnings.
+ ** Nov 13, 2006 - optimized colMedians
  **
  *****************************************************/
 
@@ -3351,15 +3352,30 @@ static void dbm_singlecolMedian(doubleBufferedMatrix Matrix,int j,int naflag,dou
     }
   }
 
-  qsort(buffer,i_nonNA,sizeof(double),(int(*)(const void*, const void*))sort_double);
-  
   
   if ((i_nonNA % 2) == 1){
-    results[j] = buffer[(i_nonNA-1)/2];
-  } else { 
-    results[j] = (buffer[(i_nonNA)/2-1] + buffer[(i_nonNA)/2])/2.0;
+    rPsort(buffer, i_nonNA, (i_nonNA-1)/2);
+    results[j]= buffer[(i_nonNA-1)/2];
+  } else {
+    rPsort(buffer, i_nonNA, (i_nonNA)/2);
+    results[j]= buffer[(i_nonNA)/2];
+    rPsort(buffer, i_nonNA, (i_nonNA)/2 - 1);
+    results[j]= (results[j] + buffer[(i_nonNA)/2 -1])/2;
+
   }
+
+
+
+  /*  
+      qsort(buffer,i_nonNA,sizeof(double),(int(*)(const void*, const void*))sort_double);
   
+  
+      if ((i_nonNA % 2) == 1){
+      results[j] = buffer[(i_nonNA-1)/2];
+      } else { 
+      results[j] = (buffer[(i_nonNA)/2-1] + buffer[(i_nonNA)/2])/2.0;
+      }
+  */
   Free(buffer);
 
 

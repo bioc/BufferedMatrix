@@ -24,6 +24,7 @@
  **  Oct 22, 2006 - add R_bm_colRanges
  **  Oct 27, 2006 - add R_bm_getFileNames
  **  Nov 12, 2006 - fix some compiler warnings
+ **  Nov 18, 2006 - Increase speed of R_bm_MakeSubmatrix
  **
  *****************************************************/
 
@@ -2226,6 +2227,8 @@ SEXP R_bm_MakeSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
   int i,j;
   int nrows,ncols;
 
+  int was_writeable =0;
+
   double tempbuffer;
 
 
@@ -2248,33 +2251,39 @@ SEXP R_bm_MakeSubmatrix(SEXP R_BufferedMatrix, SEXP R_row, SEXP R_col){
   R_bm_setRows(returnvalue,temp);
   UNPROTECT(1);
   
-  for (j = 0; j < ncols; j++){
-    R_bm_AddColumn(returnvalue);
-  }
-
   destMatrix = R_ExternalPtrAddr(returnvalue);
 
 
+  if (Matrix != NULL){
+    if (!dbm_isReadOnlyMode(Matrix)){
+      was_writeable = 1;
+      dbm_ReadOnlyMode(Matrix,1);
+    }
+  }
 
-  if (Matrix == NULL){ 
-    for (j=0; j < ncols; j++){
+  for (j = 0; j < ncols; j++){
+    dbm_AddColumn(destMatrix);  
+    if (Matrix == NULL){ 
       for (i = 0; i < nrows; i++){
 	tempbuffer = R_NaReal;
 	dbm_setValue(destMatrix,i,j,tempbuffer);
       }
-    }
-    UNPROTECT(2); 
-    return returnvalue;
-  }
-  
-  for (j=0; j < ncols; j++){
-    for (i = 0; i < nrows; i++){
-      if(!dbm_getValue(Matrix,INTEGER(R_row)[i],  INTEGER(R_col)[j], &tempbuffer)){
-	tempbuffer = R_NaReal;
+    } else {
+      for (i = 0; i < nrows; i++){
+	if(!dbm_getValue(Matrix,INTEGER(R_row)[i],  INTEGER(R_col)[j], &tempbuffer)){
+	  tempbuffer = R_NaReal;
+	}
+	dbm_setValue(destMatrix,i,j,tempbuffer);
       }
-      dbm_setValue(destMatrix,i,j,tempbuffer);
     }
   }
+
+  if (Matrix != NULL){
+    if(was_writeable)
+      dbm_ReadOnlyMode(Matrix,0);
+  }
+
+
   UNPROTECT(2); 
   return returnvalue;
 

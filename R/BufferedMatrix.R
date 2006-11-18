@@ -1081,7 +1081,6 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
     }
   }
 
-
   
     ## indexing a single cell or submatrix
   if( !missing(i) & !missing(j)) {
@@ -1136,6 +1135,7 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
       }
       indices.row <- (1:dim.x[1])[i]
       indices.col <- (1:dim.x[2])[j]
+     
 
       if (!is.null(colnames(x))){
         this.colnames <-colnames(x)[indices.col]

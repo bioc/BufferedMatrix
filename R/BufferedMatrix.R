@@ -1007,19 +1007,7 @@ setMethod("rowApply", "BufferedMatrix", function(x,FUN,...){
 })
 
 
-
-
-
-
-
-
-if(!isGeneric("as.matrix") )
-  setGeneric("as.matrix", function(x)
-             standardGeneric("as.matrix"))
-
-
-
-setMethod("as.matrix", "BufferedMatrix", function(x){
+setMethod("as.matrix", "BufferedMatrix", function(x, ...){
   
   
   .Call("R_bm_as_matrix", x@rawBufferedMatrix, PACKAGE="BufferedMatrix")

@@ -13,3 +13,7 @@ Oct 27, 2006: add filenames, memory.usage,disk.usage. Memory usage/Disk usage is
 Nov 7, 2006: add logical indexing ability
 Nov 9, 2006: make c level interface exportable so it can be used in other packages
 Nov 13, 2006: make colMedians more efficient.
+
+
+Jan 4, 2006 (0.1.24): Fix by Seth Falcon for as.matrix
+Jan 4, 2006 (0.1.25): Move all setGenerics to their own file

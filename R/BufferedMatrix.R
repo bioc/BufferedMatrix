@@ -22,7 +22,7 @@
 ## Oct 21, 2006  - add colMedians
 ## Oct 22, 2006  - add colRanges
 ## Oct 27, 2006  - add filenames method, memory.usage method
-
+## Jan 4, 2007   - remove isGeneric/setGeneric idiom. setGeneric's have been moved to their own file
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr",rownames="character",colnames="character"),
@@ -35,12 +35,6 @@ setMethod("dim", "BufferedMatrix", function(x){
           .Call("R_bm_getSize",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
           })
 
-
-
-
-if(!isGeneric("buffer.dim") )
-  setGeneric("buffer.dim", function(x)
-             standardGeneric("buffer.dim"))
 
 
 setMethod("buffer.dim", "BufferedMatrix", function(x){
@@ -402,24 +396,12 @@ setMethod("nrow","BufferedMatrix",function(x){
 
 
 
-if(!isGeneric("is.ColMode") )
-  setGeneric("is.ColMode", function(x)
-             standardGeneric("is.ColMode"))
-
-
 
 setMethod("is.ColMode","BufferedMatrix",function(x){
 
   return(!.Call("R_bm_isRowMode",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
 
 })
-
-
-
-if(!isGeneric("is.RowMode") )
-  setGeneric("is.RowMode", function(x)
-             standardGeneric("is.RowMode"))
-
 
 
 setMethod("is.RowMode","BufferedMatrix",function(x){
@@ -429,11 +411,6 @@ setMethod("is.RowMode","BufferedMatrix",function(x){
 })
 
 
-if(!isGeneric("RowMode"))
-  setGeneric("RowMode", function(x)
-             standardGeneric("RowMode"))
-  
-
 
 setMethod("RowMode","BufferedMatrix",function(x){
   return(.Call("R_bm_RowMode",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
@@ -442,11 +419,6 @@ setMethod("RowMode","BufferedMatrix",function(x){
 
 
 
-if(!isGeneric("ColMode"))
-  setGeneric("ColMode", function(x)
-             standardGeneric("ColMode"))
-  
-
 setMethod("ColMode","BufferedMatrix",function(x){
   return(.Call("R_bm_ColMode",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
 
@@ -454,9 +426,6 @@ setMethod("ColMode","BufferedMatrix",function(x){
 
 
 
-if(!isGeneric("set.buffer.dim") )
-  setGeneric("set.buffer.dim", function(x,rows,cols)
-             standardGeneric("set.buffer.dim"))
 
 
 setMethod("set.buffer.dim", "BufferedMatrix", function(x,rows,cols){
@@ -465,21 +434,12 @@ setMethod("set.buffer.dim", "BufferedMatrix", function(x,rows,cols){
 
 
 
-if (!isGeneric("prefix"))
-  setGeneric("prefix",function(x)
-             standardGeneric("prefix"))
-
-
 setMethod("prefix","BufferedMatrix",function(x){
   .Call("R_bm_getPrefix",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
 
   
 })
 
-
-if (!isGeneric("directory"))
-  setGeneric("directory",function(x)
-             standardGeneric("directory"))
 
 
 setMethod("directory","BufferedMatrix",function(x){
@@ -491,21 +451,10 @@ setMethod("directory","BufferedMatrix",function(x){
 
 
 
-if (!isGeneric("filenames"))
-  setGeneric("filenames",function(x)
-             standardGeneric("filenames"))
-
-
 setMethod("filenames","BufferedMatrix",function(x){
   .Call("R_bm_getFileNames",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
 })
 
-
-
-
-if(!isGeneric("duplicate") )
-  setGeneric("duplicate", function(x,...)
-             standardGeneric("duplicate"))
 
 
 
@@ -551,12 +500,6 @@ setMethod("duplicate", "BufferedMatrix", function(x,prefix="BM",dir) {
 
   
 })
-
-
-
-if(!isGeneric("ewApply") )
-  setGeneric("ewApply", function(x,...)
-             standardGeneric("ewApply"))
 
 
 setMethod("ewApply", "BufferedMatrix", function(x,FUN,...){
@@ -647,12 +590,6 @@ setMethod("log","BufferedMatrix",function(x,base = exp(1)){
 
 
 
-if(!isGeneric("pow") )
-  setGeneric("pow", function(x,...)
-             standardGeneric("pow"))
-
-
-
 setMethod("pow","BufferedMatrix",function(x,power=1){
 
   
@@ -664,23 +601,9 @@ setMethod("pow","BufferedMatrix",function(x,power=1){
 })
 
 
-
-if(!isGeneric("Max") )
-  setGeneric("Max", function(x,...)
-             standardGeneric("Max"))
-
-
-
 setMethod("Max", signature("BufferedMatrix"), function(x,na.rm=FALSE){
   return(.Call("R_bm_max",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 })
-
-
-
-
-if(!isGeneric("Min") )
-  setGeneric("Min", function(x,...)
-             standardGeneric("Min"))
 
 
 setMethod("Min", "BufferedMatrix", function(x,na.rm=FALSE){
@@ -693,19 +616,9 @@ setMethod("mean", "BufferedMatrix", function(x,na.rm=FALSE){
 })
 
 
-if(!isGeneric("Sum") )
-  setGeneric("Sum", function(x,...)
-             standardGeneric("Sum"))
-
-
 setMethod("Sum","BufferedMatrix", function(x,na.rm=FALSE){
   return(.Call("R_bm_sum",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 })
-
-
-if(!isGeneric("Var") )
-  setGeneric("Var", function(x,...)
-             standardGeneric("Var"))
 
 
 setMethod("Var", "BufferedMatrix", function(x,na.rm=FALSE){
@@ -713,21 +626,10 @@ setMethod("Var", "BufferedMatrix", function(x,na.rm=FALSE){
 })
 
 
-if(!isGeneric("Sd") )
-  setGeneric("Sd", function(x,...)
-             standardGeneric("Sd"))
-
-
 setMethod("Sd", "BufferedMatrix", function(x,na.rm=FALSE){
   sqrt(Var(x,na.rm))
 })
 
-
-
-
-if(!isGeneric("rowMeans") )
-  setGeneric("rowMeans", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("rowMeans"))
 
 setMethod("rowMeans","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
@@ -735,12 +637,6 @@ setMethod("rowMeans","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 
 })
-
-
-
-if(!isGeneric("rowSums") )
-  setGeneric("rowSums", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("rowSums"))
 
 
 
@@ -752,21 +648,12 @@ setMethod("rowSums","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 })
 
 
-if(!isGeneric("rowVars") )
-  setGeneric("rowVars", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("rowVars"))
-
-
 setMethod("rowVars","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
   return(.Call("R_bm_rowVars",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 
 
 })
-
-if(!isGeneric("rowSd") )
-  setGeneric("rowSd", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("rowSd"))
 
 
 setMethod("rowSd","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
@@ -776,11 +663,6 @@ setMethod("rowSd","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 })
 
-
-
-if(!isGeneric("rowMax") )
-  setGeneric("rowMax", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("rowMax"))
 
 
 setMethod("rowMax","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
@@ -793,41 +675,20 @@ setMethod("rowMax","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 
 
-
-if(!isGeneric("rowMin") )
-  setGeneric("rowMin", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("rowMin"))
-
-
 setMethod("rowMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
   return(.Call("R_bm_rowMin",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
-
-
 
 })
 
 
 
-
-if(!isGeneric("colMeans") )
-  setGeneric("colMeans", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("colMeans"))
 
 setMethod("colMeans","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
   return(.Call("R_bm_colMeans",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 
-
 })
-
-
-
-
-
-if(!isGeneric("colSums") )
-  setGeneric("colSums", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("colSums"))
 
 
 
@@ -839,22 +700,12 @@ setMethod("colSums","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 })
 
 
-if(!isGeneric("colVars") )
-  setGeneric("colVars", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("colVars"))
-
-
 setMethod("colVars","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
   return(.Call("R_bm_colVars",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
 
 
 })
-
-
-if(!isGeneric("colSd") )
-  setGeneric("colSd", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("colSd"))
 
 
 setMethod("colSd","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
@@ -864,12 +715,6 @@ setMethod("colSd","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 })
 
-
-
-
-if(!isGeneric("colMax") )
-  setGeneric("colMax", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("colMax"))
 
 
 setMethod("colMax","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
@@ -883,12 +728,6 @@ setMethod("colMax","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 
 
-
-if(!isGeneric("colMin") )
-  setGeneric("colMin", function(x,na.rm = FALSE, dims = 1)
-             standardGeneric("colMin"))
-
-
 setMethod("colMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
   return(.Call("R_bm_colMin",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
@@ -896,12 +735,6 @@ setMethod("colMin","BufferedMatrix",function(x,na.rm=FALSE,dims=1){
 
 
 })
-
-
-
-if(!isGeneric("colMedians") )
-  setGeneric("colMedians", function(x,na.rm = FALSE)
-             standardGeneric("colMedians"))
 
 
 setMethod("colMedians","BufferedMatrix",function(x,na.rm=FALSE){
@@ -912,11 +745,6 @@ setMethod("colMedians","BufferedMatrix",function(x,na.rm=FALSE){
 
 })
 
-if(!isGeneric("colRanges") )
-  setGeneric("colRanges", function(x,na.rm = FALSE)
-             standardGeneric("colRanges"))
-
-
 setMethod("colRanges","BufferedMatrix",function(x,na.rm=FALSE){
 
   return(.Call("R_bm_colRanges",x@rawBufferedMatrix,na.rm,FALSE,PACKAGE="BufferedMatrix"))
@@ -925,12 +753,6 @@ setMethod("colRanges","BufferedMatrix",function(x,na.rm=FALSE){
 
 })
 
-
-
-
-if(!isGeneric("colApply") )
-  setGeneric("colApply", function(x,...)
-             standardGeneric("colApply"))
 
 
 setMethod("colApply", "BufferedMatrix", function(x,FUN,...){
@@ -967,10 +789,6 @@ setMethod("colApply", "BufferedMatrix", function(x,FUN,...){
 })
 
 
-
-if(!isGeneric("rowApply") )
-  setGeneric("rowApply", function(x,...)
-             standardGeneric("rowApply"))
 
 
 setMethod("rowApply", "BufferedMatrix", function(x,FUN,...){
@@ -1016,11 +834,6 @@ setMethod("as.matrix", "BufferedMatrix", function(x, ...){
 })
 
 
-
-
-if(!isGeneric("subBufferedMatrix"))
-  setGeneric("subBufferedMatrix", function(x,...)
-             standardGeneric("subBufferedMatrix"))
 
 
 
@@ -1244,13 +1057,6 @@ setMethod("subBufferedMatrix","BufferedMatrix", function(x,i, j){
 
 
 
-
-
-if(!isGeneric("rownames") )
-  setGeneric("rownames", function(x,do.NULL=TRUE,prefix="row")
-             standardGeneric("rownames"))
-
-
 setMethod("rownames","BufferedMatrix",function(x,do.NULL=TRUE,prefix="row"){
 
   if (do.NULL)
@@ -1265,11 +1071,6 @@ setMethod("rownames","BufferedMatrix",function(x,do.NULL=TRUE,prefix="row"){
 })
 
 
-if(!isGeneric("colnames") )
-  setGeneric("colnames", function(x,do.NULL=TRUE,prefix="col")
-             standardGeneric("colnames"))
-
-
 setMethod("colnames","BufferedMatrix",function(x,do.NULL=TRUE,prefix="col"){
 
   if (do.NULL)
@@ -1282,13 +1083,6 @@ setMethod("colnames","BufferedMatrix",function(x,do.NULL=TRUE,prefix="col"){
     paste(prefix, seq(length = ncol(x)), sep = "")
   
 })
-
-
-
-
-if(!isGeneric("colnames<-") )
-  setGeneric("colnames<-", function(x,value)
-             standardGeneric("colnames<-"))
 
 
 
@@ -1311,12 +1105,6 @@ setReplaceMethod("colnames", "BufferedMatrix",function(x,value){
   }
 })
 
-
-
-
-if(!isGeneric("rownames<-") )
-  setGeneric("rownames<-", function(x,value)
-             standardGeneric("rownames<-"))
 
 
 
@@ -1384,27 +1172,12 @@ setReplaceMethod("dimnames","BufferedMatrix",function(x,value){
 
 
 
-
-if(!isGeneric("ReadOnlyMode") )
-  setGeneric("ReadOnlyMode", function(x)
-             standardGeneric("ReadOnlyMode"))
-
-
-
-
-
 setMethod("ReadOnlyMode","BufferedMatrix",function(x){
 
 
   .Call("R_bm_ReadOnlyModeToggle",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
 
 })
-
-
-
-if(!isGeneric("is.ReadOnlyMode") )
-  setGeneric("is.ReadOnlyMode", function(x)
-             standardGeneric("is.ReadOnlyMode"))
 
 
 
@@ -1417,23 +1190,11 @@ setMethod("is.ReadOnlyMode","BufferedMatrix",function(x){
 
 
 
-
-if (!isGeneric("memory.usage"))
-  setGeneric("memory.usage",function(x)
-             standardGeneric("memory.usage"))
-
-
 setMethod("memory.usage","BufferedMatrix",function(x){
 
   .Call("R_bm_memoryInUse",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
 })
 
-
-
-
-if (!isGeneric("disk.usage"))
-  setGeneric("disk.usage",function(x)
-             standardGeneric("disk.usage"))
 
 
 setMethod("disk.usage","BufferedMatrix",function(x){

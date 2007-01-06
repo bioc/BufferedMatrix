@@ -19,10 +19,8 @@ createBufferedMatrix <- function(rows, cols=0, bufferrows=1, buffercols=1,prefix
 
   if (cols > 0){
     for (i in 1:cols){
-      .Call("R_bm_AddColumn",tmp.externpointer, PACKAGE="BufferedMatrix")
+      tmp.externpointer <- .Call("R_bm_AddColumn",tmp.externpointer, PACKAGE="BufferedMatrix")
     }
   }
-  .Call("R_bm_ResizeBuffer",tmp.externpointer,bufferrows,buffercols, PACKAGE="BufferedMatrix")
-  
-  new("BufferedMatrix",rawBufferedMatrix=tmp.externpointer)
+  return(new("BufferedMatrix",rawBufferedMatrix=tmp.externpointer))
 }

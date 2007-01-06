@@ -1201,3 +1201,14 @@ setMethod("disk.usage","BufferedMatrix",function(x){
 
   .Call("R_bm_fileSpaceInUse",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")
 })
+
+
+
+setAs("BufferedMatrix", "matrix", function(from){
+  as.matrix(from)
+})
+
+
+setAs("matrix", "BufferedMatrix", function(from){
+  as.BufferedMatrix(from)
+})

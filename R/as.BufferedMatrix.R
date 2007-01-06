@@ -7,7 +7,7 @@
 ## 
 ## Oct 3, 2006 - make as.BufferedMatrix call the C version
 ## Oct 6, 2006 - allow directory information to be passed into the function, allong with buffer size
-
+## Jan 5, 2006 - fix as.BufferedMatrix. Incorrect parameters being passed to createBufferedMatrix
 
 
 as.BufferedMatrix <- function(x,bufferrows=1, buffercols=1,directory=getwd()){
@@ -24,14 +24,12 @@ as.BufferedMatrix <- function(x,bufferrows=1, buffercols=1,directory=getwd()){
 
 
   if (is.matrix(x)){
-    newBufferedMatrix <- createBufferedMatrix(dim(x)[1],dim(x)[2],bufferrows, buffercols,directory)
+    newBufferedMatrix <- createBufferedMatrix(rows=dim(x)[1],cols=dim(x)[2],bufferrows=bufferrows, buffercols=buffercols,director=directory)
 
     if (storage.mode(x) == "double"){
 
       .Call("R_bm_as_BufferedMatrix",newBufferedMatrix@rawBufferedMatrix,x,PACKAGE="BufferedMatrix")
-      ##for (col in 1:dim(x)[2]){
-      ##  newBufferedMatrix[,col] <- x[,col]
-      ##}
+      
     } else if (storage.mode(x) == "integer"){
       for (col in 1:dim(x)[2]){
         newBufferedMatrix[,col] <- as.double(x[,col])

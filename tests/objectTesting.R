@@ -908,3 +908,10 @@ ReadOnlyMode(tmp)
 is.ReadOnlyMode(tmp)
 
 filenames(tmp)
+
+
+### testing coercion functions
+###
+
+tmp <- as(tmp,"matrix")
+tmp <- as(tmp,"BufferedMatrix")

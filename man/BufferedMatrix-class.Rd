@@ -104,6 +104,10 @@
 \alias{disk.usage,BufferedMatrix-method}
 \alias{memory.usage,BufferedMatrix-method}
 
+\alias{coerce,matrix,BufferedMatrix-method}
+\alias{coerce,BufferedMatrix,matrix-method}
+
+
 \title{Class BufferedMatrix}
 
 \description{This is a class representation of a buffered matrix (of
@@ -326,7 +330,9 @@
     Give amount of disk space currently in use by BufferedMatrix object
   }
 
-  
+  \item{\code{as(matrix,BufferedMatrix)}:}{Coerce \code{matrix} to \code{BufferedMatrix}.}
+  \item{\code{as(BufferedMatrix,matrix)}:}{Coerce the \code{Buffered} to \code{matrix}.}
+
   
   
   }}

@@ -36,7 +36,7 @@
 \alias{filenames}
 \alias{disk.usage}
 \alias{memory.usage}
-
+\alias{AddColumn}
 
 \alias{subBufferedMatrix}
 
@@ -107,6 +107,7 @@
 \alias{coerce,matrix,BufferedMatrix-method}
 \alias{coerce,BufferedMatrix,matrix-method}
 
+\alias{AddColumn,BufferedMatrix-method}
 
 \title{Class BufferedMatrix}
 
@@ -333,6 +334,9 @@
   \item{\code{as(matrix,BufferedMatrix)}:}{Coerce \code{matrix} to \code{BufferedMatrix}.}
   \item{\code{as(BufferedMatrix,matrix)}:}{Coerce the \code{Buffered} to \code{matrix}.}
 
+
+  \item{\code{AddColumn}:}{Add an additional column to the matrix. Will
+    be all empty (set to 0)}
   
   
   }}

@@ -1212,3 +1212,10 @@ setAs("BufferedMatrix", "matrix", function(from){
 setAs("matrix", "BufferedMatrix", function(from){
   as.BufferedMatrix(from)
 })
+
+
+
+setMethod("AddColumn","BufferedMatrix",function(x){
+   x@rawBufferedMatrix <- .Call("R_bm_AddColumn",x@rawBufferedMatrix, PACKAGE="BufferedMatrix")
+   x
+})

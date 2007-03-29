@@ -1154,7 +1154,7 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
   Matrix->filenames = temp_filenames;
 
-  Free(temp_name);
+  /*   SHOULD NEVER HAVE BEEN HERE. CAUSED CRASHES ON WINDOWS Free(temp_name); */
   Free(temp_names_ptr);
   Free(tmp);
 
@@ -3353,7 +3353,9 @@ static void dbm_singlecolMedian(doubleBufferedMatrix Matrix,int j,int naflag,dou
   }
 
   
-  if ((i_nonNA % 2) == 1){
+  if (i_nonNA == 0){
+    results[j] = R_NaReal;
+  } else if ((i_nonNA % 2) == 1){
     rPsort(buffer, i_nonNA, (i_nonNA-1)/2);
     results[j]= buffer[(i_nonNA-1)/2];
   } else {

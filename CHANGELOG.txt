@@ -15,7 +15,10 @@ Nov 9, 2006: make c level interface exportable so it can be used in other packag
 Nov 13, 2006: make colMedians more efficient.
 
 
-Jan 4, 2006 (0.1.24): Fix by Seth Falcon for as.matrix
-Jan 4, 2006 (0.1.25): Move all setGenerics to their own file
-Jan 5, 2006 (0.1.26): add coerce S4 methods
-Jan 6, 2006 (0.1.27): Add AddColumn method
+Jan 4, 2007 (0.1.24): Fix by Seth Falcon for as.matrix
+Jan 4, 2007 (0.1.25): Move all setGenerics to their own file
+Jan 5, 2007 (0.1.26): add coerce S4 methods
+Jan 6, 2007 (0.1.27): Add AddColumn method
+
+
+Mar 28, 2007 (0.1.28): Fix a bug that caused crash on windows. Fix memory leak problem with colMedians when all NA

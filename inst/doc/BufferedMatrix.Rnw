@@ -1,0 +1,75 @@
+%\VignetteIndexEntry{BufferedMatrix: Introduction}
+%\VignettePackage{BufferedMatrix}
+\documentclass[12pt]{article}
+\usepackage{amsmath,pstricks}
+\usepackage{hyperref}
+\usepackage[authoryear,round]{natbib}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+
+\newcommand\Rpackage[1]{{\textsf{#1}\index{#1 (package)}}}
+\newcommand\dataset[1]{{\textit{#1}\index{#1 (data set)}}}
+\newcommand\Rclass[1]{{\textit{#1}\index{#1 (class)}}}
+\newcommand\Rfunction[1]{{{\small\texttt{#1}}\index{#1 (function)}}}
+\newcommand\Rfunarg[1]{{\small\texttt{#1}}}
+\newcommand\Robject[1]{{\small\texttt{#1}}}
+
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+\author{Ben Bolstad \\ {\tt bmb@bmbolstad.com} \\ \url{http://bmbolstad.com}}
+\begin{document}
+\title{BufferedMatrix: Introduction}
+\maketitle
+\tableofcontents
+\section{Introduction}
+
+This document is intended to introduce the \Rpackage{BufferedMatrix} package and how it may be used. It is very important to know that this package provides infrastructure rather than an analysis methods as most other BioConductor packages do.  It is {\b not} intended to be used directly by end-users. Instead it is aimed at developers of other packages.
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1\textwidth]{BufferedMatrixPicture1}
+\end{center}
+\caption{A BufferedMatrix stores data values in tabular format. In the figures the dashed lines means that the data is stored outside main memory on the filesystem}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1\textwidth]{BufferedMatrixPicture2}
+\end{center}
+\caption{Column Buffers hold selected columns in RAM. This speeds up access to data. Column Buffers are always active}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1\textwidth]{BufferedMatrixPicture3}
+\end{center}
+\caption{Row Buffers hold a selected contiguous block of rows in RAM. Row Buffers exist only when the BufferedMatrix is in RowMode.}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1\textwidth]{BufferedMatrixPicture4}
+\end{center}
+\caption{Subsetting operators pull data out of the BufferedMatrix object and into R matrix objects or vice versa.}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1\textwidth]{BufferedMatrixPicture5}
+\end{center}
+\caption{Using subBufferedMatrix creates a new BufferedMatrix containing a subset of the data stored in the BufferedMatrix}
+\end{figure}
+
+\end{document}

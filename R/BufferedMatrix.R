@@ -558,10 +558,8 @@ setMethod("sqrt","BufferedMatrix",function(x){
     stop("BufferedMatrix is ReadOnly.")
   }
 
-  return(.Call("R_bm_ewSqrt",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
+  return(invisible(.Call("R_bm_ewSqrt",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")))
   
-
-
 })
 
 
@@ -572,10 +570,7 @@ setMethod("exp","BufferedMatrix",function(x){
   }
   
   
-  return(.Call("R_bm_ewExp",x@rawBufferedMatrix,PACKAGE="BufferedMatrix"))
-  
-
-
+  return(invisible(.Call("R_bm_ewExp",x@rawBufferedMatrix,PACKAGE="BufferedMatrix")))
 })
 
 
@@ -585,7 +580,7 @@ setMethod("log","BufferedMatrix",function(x,base = exp(1)){
     stop("BufferedMatrix is ReadOnly.")
   }
   
-  return(.Call("R_bm_ewLog",x@rawBufferedMatrix,base,PACKAGE="BufferedMatrix"))
+  return(invisible(.Call("R_bm_ewLog",x@rawBufferedMatrix,base,PACKAGE="BufferedMatrix")))
 })
 
 
@@ -597,7 +592,7 @@ setMethod("pow","BufferedMatrix",function(x,power=1){
     stop("BufferedMatrix is ReadOnly.")
   }
 
-  return(.Call("R_bm_ewPow",x@rawBufferedMatrix,power,PACKAGE="BufferedMatrix"))
+  return(invisible(.Call("R_bm_ewPow",x@rawBufferedMatrix,power,PACKAGE="BufferedMatrix")))
 })
 
 

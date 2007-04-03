@@ -30,46 +30,358 @@
 \tableofcontents
 \section{Introduction}
 
-This document is intended to introduce the \Rpackage{BufferedMatrix} package and how it may be used. It is very important to know that this package provides infrastructure rather than an analysis methods as most other BioConductor packages do.  It is {\b not} intended to be used directly by end-users. Instead it is aimed at developers of other packages.
+This document is intended to introduce the \Rpackage{BufferedMatrix} package and how it may be used. It is very important to know that this package provides infrastructure rather than an analysis methods as most other BioConductor packages do.  It is {\b not} intended to be used directly by end-users. Instead it is aimed at developers of other packages. The main purpose of this package is to provide the BufferedMatrix object. This document will explain how to use the BufferedMatrix object at the R level. There is also a C language interface to dealing with BufferedMatrix objects, but that will not be discussed here.
+
+\section{What is a BufferedMatrix?}
+
+A \Rclass{BufferedMatrix} object stores numerical data in a tabular format, with most of the data primarily stored outside main memory on the file system. Figure \ref{BM-WhatIs} shows that a BufferedMatrix consists of data values arranged in rows and columns. The BufferedMatrix object implemented in this package is optimized for situations where the number of rows in much larger than the number of columns. The word {\it Buffered} is used because frequently used parts of the BufferedMatrix may be kept in main memory for increased speed. It is intended that users of the BufferedMatrix will be unaware of what is and is not in memory. Note that although the word {\it Matrix} is part of the name of the object it does not imply that you may treat a BufferedMatrix object exactly like a Matrix in all situations. For instance \Rclass{BufferedMatrix} objects are passed by reference rather than by value, are not designed for using with Matrix algebra and can not automatically be passed to all pre-existing functions that expect ordinary matrices (particularly functions that use C code). More details about these issues will be discussed a little later in this document.
+
+But first it is time to explore how to use the package. As with other packages we use \Rfunction{library} to load the package.
+<<>>=
+library(BufferedMatrix)
+@
+
+
 
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=1\textwidth]{BufferedMatrixPicture1}
 \end{center}
-\caption{A BufferedMatrix stores data values in tabular format. In the figures the dashed lines means that the data is stored outside main memory on the filesystem}
+\caption{\label{BM-WhatIs}A BufferedMatrix stores data values in tabular format. In the figures the dashed lines means that the data is stored outside main memory on the filesystem}
 \end{figure}
 
+To create a BufferedMatrix we use the \Rfunction{createBufferedMatrix} function. This function takes up to six arguments, but only the first one must be provided. To start with use:
+<<>>=
+X <- createBufferedMatrix(10000)
+@
+to create a BufferedMatrix with 10000 rows and 0 columns. Notice how only the number of rows must be supplied when creating a \Rclass{BufferedMatrix}. This is because BufferedMatrix objects fix the number of Rows they store, but allow you to dynamically add columns when needed. It is not possible however to remove columns from a BufferedMatrix. Just like all R objects typing the name of the object will show you some basic information (or the contents) of the object. In this case
+<<>>=
+X
+@
+Notice that basic summary information about the matrix is displayed in this case. We will discuss what this information means a little later. We could use the \Rfunction{AddColumn} function to add columns to our matrix like this
+<<>>=
+AddColumn(X)
+AddColumn(X)
+X
+@
+
+Of course it might have been more convinent just to instantiate our \Rclass{BufferedMatrix} object from the beginning as having 10000 rows and 2 columns. This would be acomplished using
+<<>>=
+X <- createBufferedMatrix(10000,2)
+@
+
+Of course \Rclass{BufferedMatrix} objects use buffers to temporarily store some of its contents in main memory, rather than on the filesystem. There are two types of buffering provided by BufferedMatrix objects. This are {\it ColMode} and {\it RowMode}. The default mode when you create a BufferedMatrix is to be in ColMode. Figure \ref{BM-ColMode} demonstrates the situation in ColMode. Specifically, the entire contents of a given number of columns are stored completely in RAM, with the rest of the data remaining on the file system. There is no requirement that these columns be contiguous. When most of your operations are to be done in a column-wise manner it is more efficient to be in ColMode.
 
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=1\textwidth]{BufferedMatrixPicture2}
 \end{center}
-\caption{Column Buffers hold selected columns in RAM. This speeds up access to data. Column Buffers are always active}
+\caption{\label{BM-ColMode}Column Buffers hold selected columns in RAM. This speeds up access to data. Column Buffers are always active}
 \end{figure}
 
+The other main buffering mode is RowMode. Figure \ref{BM-RowMode} illustrates the situation when in RowMode. Note that when in row mode a block of contiguous rows across all columns of the BufferedMatrix is kept in main memory. RowMode is designed for situations where you need to access a fixed set of closely spaced rows of the matrix. Note that RowMode is considered a secondary buffering mode and that the column buffers are also present when in this mode.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=1\textwidth]{BufferedMatrixPicture3}
 \end{center}
-\caption{Row Buffers hold a selected contiguous block of rows in RAM. Row Buffers exist only when the BufferedMatrix is in RowMode.}
+\caption{\label{BM-RowMode}Row Buffers hold a selected contiguous block of rows in RAM. Row Buffers exist only when the BufferedMatrix is in RowMode.}
 \end{figure}
 
+As previously mentioned before, all \Rclass{BufferedMatrix} objects start in ColMode. To switch to RowMode you can use the \Rfunction{RowMode} function like this:
+<<>>=
+RowMode(X)
+@
+To switch back to ColMode use
+<<>>=
+ColMode(X)
+@
+
+
+When you create the BufferedMatrix you can control the size of these Buffers in terms of number of columns or number of rows. In particular, suppose we wanted a 10000 by 5 matrix with 1 column buffered and 500 rows buffered when in row mode, this could be done by
+<<>>=
+X <- createBufferedMatrix(10000,5,bufferrows=500,buffercols=1)
+@
+You can also use \Rfunction{set.buffer.dim} function to set or change these after the matrix has been create. For instance to change it to 2 columns buffered and 100 rows use:
+<<>>=
+set.buffer.dim(X,100,2)
+@
+
+There are two additional arguments to \Rfunction{createBufferedMatrix}. The first is \Rfunarg{prefix} which is a string that will be used to start each temporary file name used for the filesystem storage of the \Rclass{BufferedMatrix}, by default this is "BM". The second is \Rfunarg{directory} which specifies where these temporary files are to be stored. By default this directory is the current working directory.
+
+There are several functions to get this, and additional, information about an already created \Rclass{BufferedMatrix}.
+<<>>=
+memory.usage(X)
+disk.usage(X)
+nrow(X)
+ncol(X)
+dim(X)
+buffer.dim(X)
+prefix(X)
+directory(X)
+is.RowMode(X)
+is.ColMode(X)
+@
+
+There is one other important mode that you may switch a \Rclass{BufferedMatrix} in and out of. This is {\it ReadOnly} mode. What this means is that you can access data values stored in the matrix but you can not change them. This provides speed-up in some situations because the current buffer does not need to be flushed out to the filesystem when an attempt is made to access a value currently not stored in the buffer. The function \Rfunction{ReadOnlyMode} is used to toggle between the two states.
+<<>>=
+ReadOnlyMode(X)
+is.ReadOnlyMode(X)
+ReadOnlyMode(X)
+is.ReadOnlyMode(X)
+@ 
+
+
+
+\section{Accessing and Manipulating data stored within a BufferedMatrix}
+
+Data is accessed from \Rclass{BufferedMatrix} objects using similar indexing procedures to those you would use with a standard \Rclass{matrix} object. In particular you can use the \Rfunction{[} aind \Rfunction{[<-} operators to see or replace data in an Buffered Matrix. Figure \ref{BM-IndexingMatrix} demonstrates how indexing and assigment operations are set up to occur with \Rclass{BufferedMatrix} objects. Specifically, when you index part of the BufferedMatrix an ordinary R matrix is created and the the data requested copied from the BufferedMatrix. This matrix is then no longer linked to the data in the BufferedMatrix.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=1\textwidth]{BufferedMatrixPicture4}
 \end{center}
-\caption{Subsetting operators pull data out of the BufferedMatrix object and into R matrix objects or vice versa.}
+\caption{\label{BM-IndexingMatrix}Subsetting operators pull data out of the BufferedMatrix object and into R matrix objects or vice versa.}
 \end{figure}
+
+For example
+<<>>=
+X <- createBufferedMatrix(20,2)
+X[1:20,] <- 1:40
+B <- X[1:5,]
+B
+B[1:2,] <- B[1:2,]^2
+B
+X[1:5,]
+@
+
+Similarly, assignments using the indexing operators copy the data from the R \Rclass{matrix} or \Rclass{vector} into the specified location of the \Rclass{BufferedMatrix}. 
+<<>>=
+X[1:5,] <- B
+X[1:5,]
+@
+
+As with ordinary R \Rclass{matrix} objects we may have column or row name indices. For example:
+<<>>=
+rownames(X)
+colnames(X)
+rownames(X) <- letters[1:20]
+colnames(X) <- month.abb[1:2]
+@ 
+and these can be used interchangably with numerical indexing values.
+<<>>=
+X[c("a","b"),"Jan"]
+X["t",2] <- 0
+@
+
+\Rclass{BufferedMatrix} objects also support logical indexing. eg
+<<>>=
+X[rep(c(TRUE,FALSE),10),1]
+@
+
+Sometimes it might be useful to create another \Rclass{BufferedMatrix} out of an existing one. For this purpose the \Rfunction{subBufferedMatrix} command may be used. This function operates in a similar manner to indexing operators, but instead of copying the data into an R matrix another \Robject{BufferedMatrix} is produced. Figure \ref{BM-subBufferedMatrix} illustates this procedure.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=1\textwidth]{BufferedMatrixPicture5}
 \end{center}
-\caption{Using subBufferedMatrix creates a new BufferedMatrix containing a subset of the data stored in the BufferedMatrix}
+\caption{\label{BM-subBufferedMatrix}Using subBufferedMatrix creates a new BufferedMatrix containing a subset of the data stored in the BufferedMatrix}
 \end{figure}
+
+<<>>=
+Y <- subBufferedMatrix(X,1:5,1:2)
+Y
+@
+
+
+\section{Functions for summarizing a BufferedMatrix}
+
+Sometimes it is useful to generate summary statistic values from a \Rclass{BufferedMatrix} object. While it would be possible to do this by writing your own code using loops and indexing a number of more optimized functions have been provided for this purpose. These functions concentrate on getting the maximum, minimum, means, variances and so forth. The try to minimize buffer misses as much as possible.
+<<>>=
+X <- createBufferedMatrix(10,3)
+X[1:10,] <- (1:30)^2
+Max(X)
+Min(X)
+mean(X)
+Sum(X)
+Var(X)
+Sd(X)
+@
+
+It may also be useful to get these values for each column or each row.
+<<>>=
+rowMeans(X)
+colMeans(X)
+rowSums(X)
+colSums(X)
+rowVars(X)
+colVars(X)
+rowSd(X)
+colSd(X)
+rowMax(X)
+colMax(X)
+rowMin(X)
+colMin(X)
+@
+
+\section{Applying your own function to the rows or columns of a BufferedMatrix}
+
+While many useful functions are provided for carrying out row-wise or column-wise operations,  you may want to use your own function to do a different summarization. This may be done using the \Rfunction{rowApply} and \Rfunction{colApply} functions. For example suppose you wanted to write a function which computed the sum of the cube roots of the elements of a column. This would be done like this:
+<<>>=
+sum.cube.root <- function(x){
+	sum(x^(1/3))
+}
+colApply(X,sum.cube.root)
+@
+these functions may also take additional arguments
+<<>>=
+sum.arbitrary.power <- function(x,power=2){
+	sum(x^power)
+}
+rowApply(X,sum.arbitrary.power,power=3)
+@
+
+Note that if your \Rclass{BufferedMatrix} is large and you are not in RowMode, with a sufficiently sized row buffer, then calls to \Rfunction{rowApply} will be very slow.
+
+It is also possible to use a function which returns more than one item. In this case, rather than returning a vector another \Rclass{BufferedMatrix} will be returned.
+<<>>=
+Y <- colApply(X,sort,decreasing=TRUE)
+is(Y,"BufferedMatrix")
+@ 
+
+Note that \Rfunction{colApply} and \Rfunction{rowApply} assume that your function returns a fixed length vector.
+
+
+\section{Elementwise transformation of BufferedMatrix objects}
+
+In some situations it might be useful to transform each element of your \Rclass{BufferedMatrix}. For instance log or exponential transformations, square roots or arbitrary powers. Unlike when you ordinarily apply these functions to an R matrix, when you apply these function to \Rclass{BufferedMatrix} objects, the object is not copied before being transformed. In otherwords these functions do not leave the \Rclass{BuffferedMatrix} untouched.
+<<>>=
+exp(X)
+log(X)
+sqrt(X)
+pow(X,2.0)
+@ 
+
+If you have a customized function that you want to apply in an element-wise fashion you can use the \Rfunction{ewApply} function. Note that the function you supply must return only a single value when it is given an argument of length 1 and must return a vector of length $n$ if given a vector of length $n$. It is best that you design your input function to operate in a vectorized manner.
+<<>>=
+my.function <- function(x){
+  x^2 +3*abs(x) - 9
+}
+ewApply(X, my.function)
+@ 
+
+\section{Converting between BufferedMatrix and Matrix objects}
+
+It is possible to convert a \Rclass{BufferedMatrix} into a \Rclass{matrix} and vice versa. But in most cases you will not want to do this because your \Rclass{BufferedMatrix} may be too large to keep completely in the RAM available to R.
+
+To convert a \Rclass{BufferedMatrix} to a \Rclass{Matrix} use:
+<<>>=
+Z <- as(X,"matrix")
+class(Z)
+@ 
+
+To make a \Rclass{Matrix} become a \Rclass{BufferedMatrix} use:
+<<>>=
+A <- as(Z,"BufferedMatrix")
+class(A)
+@ 
+
+\section{BufferedMatrix objects are pass-by reference}
+
+As previously mentioned when you pass an \Rclass{BufferedMatrix} to a function you are passing it by reference. This means that if the function operates on the \Rclass{BufferedMatrix} using a function that can change values stored within the \Rclass{BufferedMatrix} then it is changed in the calling environment. This differs from the behaviour of a normal R matrix.
+<<>>=
+X <- createBufferedMatrix(50,10)
+X[1:50,] <- 1:500
+Y <- as(X,"matrix")
+
+my.function <- function(a.matrix){
+  a.matrix[,1:10] <- a.matrix[,sample(1:10,10)] 
+}
+
+X[1:5,]
+my.function(X)
+X[1:5,]
+
+Y[1:5,]
+my.function(Y)
+Y[1:5,]
+@ 
+
+There is one exception to the pass-by reference rule, column and row names are passed by value, meaning that modifications to dimension names within a calling function have no effect on the dimension names in the calling environment. However, this may be changed in future releases so you should not rely on this behaviour.
+
+In situations where you want to simulate call by value you can use the \Rfunction{duplicate} function. This will make a copy of the \Rclass{BufferedMatrix}.
+
+<<>>=
+X <- createBufferedMatrix(50,10)
+X[1:50,] <- 1:500
+my.function <- function(my.bufmat){
+  internal.bufmat <- duplicate(my.bufmat)
+  internal.bufmat[,1:10] <- internal.bufmat[,sample(1:10,10)] 
+}
+
+
+X[1:5,]
+my.function(X)
+X[1:5,]
+@ 
+
+Table \ref{BM-Modify} summarizes which functions modify and those don't modify \Rclass{BufferedMatrix} objects.
+
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Functions that do not & Functions that do \\
+modify data stored in & modify data stored in \\
+\Rclass{BufferedMatrix} objects & \Rclass{BufferedMatrix} objects \\ \hline
+\Rfunction{[} & \Rfunction{[<-}\\
+\Rfunction{Max} &    \Rfunction{exp}             \\
+\Rfunction{Min} &   \Rfunction{log}                 \\
+\Rfunction{mean} &  \Rfunction{sqrt}             \\
+\Rfunction{Sum} &   \Rfunction{pow}      \\
+\Rfunction{Var} &   \Rfunction{ewApply}      \\
+\Rfunction{Sd} &     \Rfunction{RowMode}   \\  
+\Rfunction{rowMeans} & \Rfunction{ColMode}\\
+\Rfunction{colMeans} & \Rfunction{ReadOnlyMode}\\
+\Rfunction{rowSums} & \Rfunction{AddColumn}\\
+\Rfunction{colSums} & \\
+\Rfunction{rowVars} &\\
+\Rfunction{colVars} &                 \\
+\Rfunction{rowSd} &                 \\
+\Rfunction{colSd} &                 \\
+\Rfunction{rowMax} &                 \\
+\Rfunction{colMax} &                 \\
+\Rfunction{rowMin} &                 \\
+\Rfunction{colMin} &                 \\
+\Rfunction{colApply} &                 \\
+\Rfunction{rowApply} &                 \\
+\Rfunction{duplicate} &   \\
+\Rfunction{as} & \\
+ \Rfunction{ncol}& \\
+ \Rfunction{nrow}& \\
+ \Rfunction{is.ColMode}& \\
+ \Rfunction{is.RowMode}& \\
+ \Rfunction{set.buffer.dim}& \\
+ \Rfunction{prefix}& \\
+ \Rfunction{directory}& \\
+ \Rfunction{filenames}& \\
+ \Rfunction{subBufferedMatrix}& \\
+ \Rfunction{is.ReadOnlyMode} & \\
+\Rfunction{memory.usage} & \\
+\Rfunction{disk.usage} & \\ \hline
+\end{tabular}
+\end{center}
+\caption{\label{BM-Modify}A breakdown of functions that do and do not modify data stored in or how it is stored in \Rclass{BufferedMatrix} objects.}
+\end{table}
+
+
+
+\section{Future Enhancements}
+
+Currently \Rclass{BufferedMatrix} objects can not properly serialized. That means you can not save and reload a BufferedMatrix between R sessions. This is an issue to be addressed in a future release of the \Rpackage{BufferedMatrix} package.
+
+
 
 \end{document}

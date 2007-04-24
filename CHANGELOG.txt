@@ -24,3 +24,4 @@ Jan 6, 2007 (0.1.27): Add AddColumn method
 Mar 28, 2007 (0.1.28): Fix a bug that caused crash on windows. Fix memory leak problem with colMedians when all NA
 
 Mar 29, 2007 (0.1.29): Introduce a very basic vignette (not anywhere near completion).
+Apr 24, 2007 (0.99.0): Bump version number to prepare for release

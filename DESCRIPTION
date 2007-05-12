@@ -7,6 +7,6 @@ Depends: methods
 Description: A tabular style data object where most data is stored outside main memory. A buffer is used to speed up access to data.
 License: LGPL version 2 or newer
 Collate:  allGenerics.R  BufferedMatrix.R  as.BufferedMatrix.R createBufferedMatrix.R  init.R
-SaveImage: yes
+LazyLoad: yes
 biocViews: Infrastructure
 

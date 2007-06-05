@@ -8,7 +8,7 @@ typedef struct _double_buffered_matrix *doubleBufferedMatrix;
 
 
 /* Memory allocation */
-doubleBufferedMatrix dbm_alloc(int max_rows, int max_cols, char *prefix, char *directory);
+doubleBufferedMatrix dbm_alloc(int max_rows, int max_cols, const char *prefix, const char *directory);
 int dbm_free(doubleBufferedMatrix Matrix);
 
 
@@ -22,7 +22,7 @@ int dbm_ResizeBuffer(doubleBufferedMatrix Matrix, int new_maxrow, int new_maxcol
 void dbm_RowMode(doubleBufferedMatrix Matrix);
 void dbm_ColMode(doubleBufferedMatrix Matrix);
 
-void dbm_SetPrefix(doubleBufferedMatrix Matrix,char *prefix);
+void dbm_SetPrefix(doubleBufferedMatrix Matrix,const char *prefix);
 
 void dbm_ReadOnlyMode(doubleBufferedMatrix Matrix, int setting);
 

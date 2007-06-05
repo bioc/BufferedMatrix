@@ -845,12 +845,12 @@ static int *dbm_whatsInColumnBuffer(doubleBufferedMatrix Matrix){
 
 /*****************************************************
  **
- ** doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,char *prefix, char *directory)
+ ** doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,const char *prefix, const char *directory)
  **
  ** int max_rows - maximum number of rows that can be stored in the row buffer (if it is activated)
  ** int max_cols - maximum number of columns that can be stored in the column buffer
- ** char *prefix - character string to use for start of filename for temporary files. 
- ** char *directory - character string for 
+ ** const char *prefix - character string to use for start of filename for temporary files. 
+ ** const char *directory - character string for 
  **
  ** 
  ** RETURNS an allocated empty doubleBufferedMatrix. Note that this routine
@@ -861,7 +861,7 @@ static int *dbm_whatsInColumnBuffer(doubleBufferedMatrix Matrix){
  *****************************************************/
 
 
-doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,char *prefix, char *directory){
+doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,const char *prefix, const char *directory){
   
   char *tmp;
 
@@ -1527,7 +1527,7 @@ void dbm_ColMode(doubleBufferedMatrix Matrix){
 
 /******************************************************
  **
- ** void dbm_SetPrefix(doubleBufferedMatrix Matrix,char *prefix)
+ ** void dbm_SetPrefix(doubleBufferedMatrix Matrix,const char *prefix)
  **
  ** Sets initial part of the filename of temporary files
  ** used for storing matrix.
@@ -1536,7 +1536,7 @@ void dbm_ColMode(doubleBufferedMatrix Matrix){
 
 
 
-void dbm_SetPrefix(doubleBufferedMatrix Matrix,char *prefix){
+void dbm_SetPrefix(doubleBufferedMatrix Matrix,const char *prefix){
 
   char *tmp;
 

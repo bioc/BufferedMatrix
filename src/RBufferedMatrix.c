@@ -78,7 +78,7 @@ static int checkBufferedMatrix(SEXP R_BufferedMatrix){
 
   char truetagname[15] = "RBufferedMatrix";
 
-  char *tagname;
+  const char *tagname;
 
  
   tagsxp = R_ExternalPtrTag(R_BufferedMatrix);
@@ -118,8 +118,8 @@ static int checkBufferedMatrix(SEXP R_BufferedMatrix){
 
 SEXP R_bm_Create(SEXP R_prefix, SEXP R_directory, SEXP R_max_rows, SEXP R_max_cols){
 
-  char *prefix = CHAR(VECTOR_ELT(R_prefix,0));
-  char *directory = CHAR(VECTOR_ELT(R_directory,0));
+  const char *prefix = CHAR(VECTOR_ELT(R_prefix,0));
+  const char *directory = CHAR(VECTOR_ELT(R_directory,0));
 
   double max_rows = asReal(R_max_rows);
   double max_cols = asReal(R_max_cols);
@@ -480,7 +480,7 @@ SEXP R_bm_SetPrefix(SEXP R_BufferedMatrix, SEXP R_Prefix){
 
   
   doubleBufferedMatrix Matrix;
-  char *prefix = CHAR(VECTOR_ELT(R_Prefix,0));
+  const char *prefix = CHAR(VECTOR_ELT(R_Prefix,0));
 
   if(!checkBufferedMatrix(R_BufferedMatrix)){
     error("Invalid ExternalPointer supplied to R_bm_SetPrefix");
@@ -2162,7 +2162,7 @@ SEXP isBufferedMatrix(SEXP R_BufferedMatrix){
   SEXP returnvalue;
 
   char truetagname[15] = "RBufferedMatrix";
-  char *tagname;
+  const char *tagname;
 
  
 

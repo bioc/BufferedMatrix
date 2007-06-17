@@ -25,3 +25,6 @@ Mar 28, 2007 (0.1.28): Fix a bug that caused crash on windows. Fix memory leak p
 
 Mar 29, 2007 (0.1.29): Introduce a very basic vignette (not anywhere near completion).
 Apr 24, 2007 (0.99.0): Bump version number to prepare for release
+
+
+Jun 16, 2007 (1.1.2) : add MoveStorageDirectory()

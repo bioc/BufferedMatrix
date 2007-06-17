@@ -2380,7 +2380,7 @@ SEXP R_bm_memoryInUse(SEXP R_BufferedMatrix){
   doubleBufferedMatrix Matrix; 
   
   if(!checkBufferedMatrix(R_BufferedMatrix)){
-    error("Invalid ExternalPointer supplied to R_bm_getSize");
+    error("Invalid ExternalPointer supplied to R_bm_memoryInUse");
   }
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
@@ -2413,7 +2413,7 @@ SEXP R_bm_fileSpaceInUse(SEXP R_BufferedMatrix){
   doubleBufferedMatrix Matrix; 
   
   if(!checkBufferedMatrix(R_BufferedMatrix)){
-    error("Invalid ExternalPointer supplied to R_bm_getSize");
+    error("Invalid ExternalPointer supplied to R_bm_fileSpaceInUse");
   }
 
   Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
@@ -2439,4 +2439,26 @@ SEXP R_bm_fileSpaceInUse(SEXP R_BufferedMatrix){
 
 
 
+SEXP R_bm_setNewDirectory(SEXP R_BufferedMatrix, SEXP R_new_directory){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix; 
+  const char *newdirectory = CHAR(VECTOR_ELT(R_new_directory,0));
+  
+  
+  if(!checkBufferedMatrix(R_BufferedMatrix)){
+    error("Invalid ExternalPointer supplied to R_bm_setNewDirectory");
+  }
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+  
+  dbm_setNewDirectory(Matrix, newdirectory);
+
+
+
+
+  return returnvalue;
+
+
+}
 

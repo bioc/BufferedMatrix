@@ -915,3 +915,10 @@ filenames(tmp)
 
 tmp <- as(tmp,"matrix")
 tmp <- as(tmp,"BufferedMatrix")
+
+
+
+### testing whether can move storage from one location to another
+
+MoveStorageDirectory(tmp,"NewDirectory",full.path=FALSE)
+MoveStorageDirectory(tmp,getwd(),full.path=TRUE)

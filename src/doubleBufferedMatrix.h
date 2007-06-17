@@ -83,4 +83,7 @@ void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *r
 double dbm_fileSpaceInUse(doubleBufferedMatrix Matrix);
 int dbm_memoryInUse(doubleBufferedMatrix Matrix);
 
+int dbm_setNewDirectory(doubleBufferedMatrix Matrix, const char *newdirectory);
+
+
 #endif

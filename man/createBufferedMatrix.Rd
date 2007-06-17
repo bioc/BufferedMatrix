@@ -2,7 +2,6 @@
 \alias{createBufferedMatrix}
 \title{createBufferedMatrix}
 \description{Creates a Buffered Matrix object}
-}
 \usage{createBufferedMatrix(rows, cols=0, bufferrows=1, buffercols=1,prefix="BM",directory=getwd())
 }
 \arguments{

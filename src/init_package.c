@@ -47,7 +47,7 @@ void R_init_BufferedMatrix(){
   R_RegisterCCallable("BufferedMatrix", "dbm_getPrefix", (DL_FUNC)dbm_getPrefix);
   R_RegisterCCallable("BufferedMatrix", "dbm_getDirectory", (DL_FUNC)dbm_getDirectory);
   R_RegisterCCallable("BufferedMatrix", "dbm_getFileName", (DL_FUNC)dbm_getFileName);
-  R_RegisterCCallable("BufferedMatrix", "dbm_setDirectory", (DL_FUNC)dbm_setDirectory);
+  R_RegisterCCallable("BufferedMatrix", "dbm_setNewDirectory", (DL_FUNC)dbm_setNewDirectory);
   R_RegisterCCallable("BufferedMatrix", "dbm_copyValues", (DL_FUNC)dbm_copyValues);
   R_RegisterCCallable("BufferedMatrix", "dbm_ewApply", (DL_FUNC)dbm_ewApply);
   R_RegisterCCallable("BufferedMatrix", "dbm_max", (DL_FUNC)dbm_max);

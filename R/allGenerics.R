@@ -41,10 +41,6 @@ setGeneric("is.ReadOnlyMode", function(x) standardGeneric("is.ReadOnlyMode"))
 setGeneric("memory.usage",function(x) standardGeneric("memory.usage"))
 setGeneric("disk.usage",function(x) standardGeneric("disk.usage"))
 setGeneric("AddColumn",function(x) standardGeneric("AddColumn"))
-
-
-
-
-
+setGeneric("MoveStorageDirectory",function(x,new.directory,...) standardGeneric("MoveStorageDirectory"))
 
 

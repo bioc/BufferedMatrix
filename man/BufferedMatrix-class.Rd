@@ -37,7 +37,7 @@
 \alias{disk.usage}
 \alias{memory.usage}
 \alias{AddColumn}
-
+\alias{MoveStorageDirectory}
 \alias{subBufferedMatrix}
 
 \alias{dim,BufferedMatrix-method}
@@ -108,6 +108,10 @@
 \alias{coerce,BufferedMatrix,matrix-method}
 
 \alias{AddColumn,BufferedMatrix-method}
+
+\alias{MoveStorageDirectory,BufferedMatrix-method}
+
+
 
 \title{Class BufferedMatrix}
 
@@ -337,6 +341,9 @@
 
   \item{\code{AddColumn}:}{Add an additional column to the matrix. Will
     be all empty (set to 0)}
+
+  \item{\code{MoveStorageDirectory}:}{Move the temporary files used to
+  store the matrix from one location to another}
   
   
   }}

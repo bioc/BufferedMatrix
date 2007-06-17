@@ -23,6 +23,7 @@
 ## Oct 22, 2006  - add colRanges
 ## Oct 27, 2006  - add filenames method, memory.usage method
 ## Jan 4, 2007   - remove isGeneric/setGeneric idiom. setGeneric's have been moved to their own file
+## Jun 16, 2007 - add MoveStorageDirectory
 
 setClass("BufferedMatrix",
            representation(rawBufferedMatrix="externalptr",rownames="character",colnames="character"),
@@ -1214,3 +1215,16 @@ setMethod("AddColumn","BufferedMatrix",function(x){
    x@rawBufferedMatrix <- .Call("R_bm_AddColumn",x@rawBufferedMatrix, PACKAGE="BufferedMatrix")
    x
 })
+
+
+setMethod("MoveStorageDirectory","BufferedMatrix",function(x,new.directory,full.path=TRUE){
+
+  if (full.path){
+    dir.create(new.directory)
+  } else {
+    new.directory <- file.path(getwd(),new.directory)
+  }
+
+  .Call("R_bm_setNewDirectory",x@rawBufferedMatrix, new.directory, PACKAGE="BufferedMatrix")
+})
+      

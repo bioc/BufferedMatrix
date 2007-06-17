@@ -2,7 +2,7 @@
  **
  ** file: doubleBufferedMatrix.c
  **
- ** Copyright (C) 2006    B. M. Bolstad
+ ** Copyright (C) 2006-2007    B. M. Bolstad
  **
  ** aim: A class to represent a resizable matrix of doubles.
  **      Where resizable means we may add columns of data.
@@ -31,6 +31,7 @@
  **  Oct 27, 2006 - add dbm_getFileName, dbm_fileSpaceInUse, dbm_memoryInUse
  **  Nov 12, 2006 - make fwrite, fread return values get checked. Fix various compiler warnings.
  ** Nov 13, 2006 - optimized colMedians
+ ** Jun 16, 2007 -  rename dbm_setDirectory to dbm_setNewDirectory
  **
  *****************************************************/
 
@@ -2148,7 +2149,7 @@ char *dbm_getFileName(doubleBufferedMatrix Matrix, int col){
 
 /* Changes the directory into which the temporary files are stored */
 
-int dbm_setDirectory(doubleBufferedMatrix Matrix, char *newdirectory){
+int dbm_setNewDirectory(doubleBufferedMatrix Matrix, const char *newdirectory){
 
   char *directory;
   char *olddirectory;
@@ -2174,6 +2175,10 @@ int dbm_setDirectory(doubleBufferedMatrix Matrix, char *newdirectory){
     Matrix->filenames[i] = tmp;
     Free(temp_name);
   }
+
+  Matrix->filedirectory = directory;
+
+  Free(olddirectory);
 
 
   return 0;

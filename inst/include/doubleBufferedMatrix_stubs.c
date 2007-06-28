@@ -121,8 +121,8 @@ void dbm_ReadOnlyMode(doubleBufferedMatrix Matrix, int setting){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int))R_GetCCallable("BufferedMatrix","dbm_ReadOnlyMode");
-  
-  return fun(Matrix,setting);
+  fun(Matrix,setting);
+  return;
 }
 
 int dbm_isReadOnlyMode(doubleBufferedMatrix Matrix){
@@ -444,8 +444,8 @@ void dbm_rowMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_rowMeans");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -454,8 +454,8 @@ void dbm_rowSums(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_rowSums");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -476,13 +476,9 @@ void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_rowMax");
-  
-  return fun(Matrix,naflag,results);
 
-
-
-
-
+  fun(Matrix,naflag,results);
+  return; 
 }
 
 

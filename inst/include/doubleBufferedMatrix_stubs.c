@@ -73,8 +73,8 @@ void dbm_RowMode(doubleBufferedMatrix Matrix){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix))R_GetCCallable("BufferedMatrix","dbm_RowMode");
-  
-  return fun(Matrix);
+  fun(Matrix);
+  return;
 }
 
 
@@ -85,8 +85,8 @@ void dbm_ColMode(doubleBufferedMatrix Matrix){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix))R_GetCCallable("BufferedMatrix","dbm_ColMode");
-  
-  return fun(Matrix);
+  fun(Matrix);
+  return;
 
 
 }
@@ -106,8 +106,8 @@ void dbm_SetPrefix(doubleBufferedMatrix Matrix,char *prefix){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, char *))R_GetCCallable("BufferedMatrix","dbm_SetPrefix");
-  
-  return fun(Matrix, prefix);
+  fun(Matrix, prefix);
+  return;
 
 
 }
@@ -465,8 +465,8 @@ void dbm_rowVars(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_rowVars");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -492,8 +492,8 @@ void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_rowMin");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 
 }
 
@@ -503,8 +503,8 @@ void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_colMeans");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -514,8 +514,8 @@ void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_colSums");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -524,8 +524,8 @@ void dbm_colVars(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_colVars");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -534,8 +534,8 @@ void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_colMax");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results){
@@ -543,8 +543,8 @@ void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_colMin");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -553,8 +553,8 @@ void dbm_colMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_colMedians");
-  
-  return fun(Matrix,naflag,results);
+  fun(Matrix,naflag,results);
+  return;
 }
 
 
@@ -563,8 +563,8 @@ void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *r
   
   if (fun == NULL)
     fun =  (void(*)(doubleBufferedMatrix, int, int, double *))R_GetCCallable("BufferedMatrix","dbm_colRanges");
-  
-  return fun(Matrix,naflag, finite ,results);
+  fun(Matrix,naflag, finite ,results);
+  return;
 }
 
 

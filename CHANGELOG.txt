@@ -28,3 +28,5 @@ Apr 24, 2007 (0.99.0): Bump version number to prepare for release
 
 
 Jun 16, 2007 (1.1.2) : add MoveStorageDirectory()
+
+Aug 3, 2007 (1.1.4): Fix MoveStorageDirectory() on windows implementation

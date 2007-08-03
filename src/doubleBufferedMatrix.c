@@ -2167,13 +2167,11 @@ int dbm_setNewDirectory(doubleBufferedMatrix Matrix, const char *newdirectory){
 
   for (i =0; i < Matrix->cols; i++){
     temp_name = (char *)R_tmpnam(Matrix->fileprefix,newdirectory);
-
     tmp = Calloc(strlen(temp_name)+1,char);
     strcpy(tmp,temp_name);
-
     rename(Matrix->filenames[i], tmp);
     Matrix->filenames[i] = tmp;
-    Free(temp_name);
+    /*  Free(temp_name); */
   }
 
   Matrix->filedirectory = directory;

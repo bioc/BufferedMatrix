@@ -1223,6 +1223,7 @@ setMethod("MoveStorageDirectory","BufferedMatrix",function(x,new.directory,full.
     dir.create(new.directory)
   } else {
     new.directory <- file.path(getwd(),new.directory)
+    dir.create(new.directory)
   }
 
   .Call("R_bm_setNewDirectory",x@rawBufferedMatrix, new.directory, PACKAGE="BufferedMatrix")

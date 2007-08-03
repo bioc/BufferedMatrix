@@ -2441,7 +2441,7 @@ SEXP R_bm_fileSpaceInUse(SEXP R_BufferedMatrix){
 
 SEXP R_bm_setNewDirectory(SEXP R_BufferedMatrix, SEXP R_new_directory){
 
-  SEXP returnvalue;
+  SEXP returnvalue= R_BufferedMatrix;
   doubleBufferedMatrix Matrix; 
   const char *newdirectory = CHAR(VECTOR_ELT(R_new_directory,0));
   

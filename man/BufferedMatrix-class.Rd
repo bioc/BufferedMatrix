@@ -28,6 +28,8 @@
 \alias{rowMin}
 \alias{rowSd}
 \alias{rowVars}
+\alias{rowMedians}
+
 \alias{colApply}
 \alias{rowApply}
 
@@ -74,6 +76,8 @@
 \alias{colSums,BufferedMatrix-method}
 \alias{rowSums,BufferedMatrix-method}
 \alias{colMedians,BufferedMatrix-method}
+\alias{rowMedians,BufferedMatrix-method}
+
 \alias{colRanges,BufferedMatrix-method}
 
 
@@ -252,7 +256,15 @@
   \item{rowSums}{\code{signature(object = "BufferedMatrix")}: Returns a
     vector containing sum by row
   }
- 
+
+  \item{colMedians}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing medians by column
+  }
+
+  \item{rowMedians}{\code{signature(object = "BufferedMatrix")}: Returns a
+    vector containing medians by row. Best only used when the matrix is
+    in RowMode (otherwise it is extremely slow)
+  }
   \item{Max}{\code{signature(object = "BufferedMatrix")}: Returns the
     maximum of all elements in the matrix
   }

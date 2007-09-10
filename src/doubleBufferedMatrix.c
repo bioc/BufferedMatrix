@@ -32,6 +32,7 @@
  **  Nov 12, 2006 - make fwrite, fread return values get checked. Fix various compiler warnings.
  ** Nov 13, 2006 - optimized colMedians
  ** Jun 16, 2007 -  rename dbm_setDirectory to dbm_setNewDirectory
+ ** Sep 9,  2007 - add dbm_rowMedians (only good in rowMode
  **
  *****************************************************/
 
@@ -3607,3 +3608,49 @@ double dbm_fileSpaceInUse(doubleBufferedMatrix Matrix){
   return (double)(Matrix->rows)*(double)Matrix->cols*(double)sizeof(double);
 
 }
+
+
+
+/* Note that this function only works when in row mode  (in any level of efficiency) */
+
+void dbm_rowMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
+  int i; /* indexes current row */
+  int j; /* indexes cols */
+ 
+  double *buffer = Calloc(Matrix->cols,double);
+  int j_nonNA=0;
+  double *value;
+
+
+  for (i = 0; i < Matrix->rows; i++){
+    
+    j_nonNA = 0;
+    for (j = 0; j < Matrix->cols; j++){
+      value = dbm_internalgetValue(Matrix,i,j);
+      if (ISNAN(*value)){
+	if (!naflag){
+	  results[i] = R_NaReal;
+	  break;
+	} 
+      } else {
+	buffer[j_nonNA] = *value;
+	j_nonNA++;
+      }
+    }
+    if (j_nonNA == 0){
+      results[i] = R_NaReal;
+    } else if ((j_nonNA % 2) == 1){
+      rPsort(buffer, j_nonNA, (j_nonNA-1)/2);
+      results[i]= buffer[(j_nonNA-1)/2];
+    } else {
+      rPsort(buffer, j_nonNA, (j_nonNA)/2);
+      results[i]= buffer[(j_nonNA)/2];
+      rPsort(buffer, j_nonNA, (j_nonNA)/2 - 1);
+      results[i]= (results[j] + buffer[(j_nonNA)/2 -1])/2;
+    }
+  }
+  
+  Free(buffer);
+  
+}
+

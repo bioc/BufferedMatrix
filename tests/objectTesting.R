@@ -922,3 +922,7 @@ tmp <- as(tmp,"BufferedMatrix")
 
 MoveStorageDirectory(tmp,"NewDirectory",full.path=FALSE)
 MoveStorageDirectory(tmp,getwd(),full.path=TRUE)
+
+
+RowMode(tmp)
+rowMedians(tmp)

@@ -21,6 +21,7 @@ setGeneric("rowVars", function(x,na.rm = FALSE, dims = 1) standardGeneric("rowVa
 setGeneric("rowSd", function(x,na.rm = FALSE, dims = 1) standardGeneric("rowSd"))
 setGeneric("rowMax", function(x,na.rm = FALSE, dims = 1) standardGeneric("rowMax"))
 setGeneric("rowMin", function(x,na.rm = FALSE, dims = 1) standardGeneric("rowMin"))
+setGeneric("rowMedians", function(x,na.rm = FALSE) standardGeneric("rowMedians"))
 setGeneric("colMeans", function(x,na.rm = FALSE, dims = 1) standardGeneric("colMeans"))
 setGeneric("colSums", function(x,na.rm = FALSE, dims = 1) standardGeneric("colSums"))
 setGeneric("colVars", function(x,na.rm = FALSE, dims = 1) standardGeneric("colVars"))

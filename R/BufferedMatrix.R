@@ -1229,3 +1229,15 @@ setMethod("MoveStorageDirectory","BufferedMatrix",function(x,new.directory,full.
   .Call("R_bm_setNewDirectory",x@rawBufferedMatrix, new.directory, PACKAGE="BufferedMatrix")
 })
       
+
+
+
+
+
+setMethod("rowMedians","BufferedMatrix",function(x,na.rm=FALSE){
+
+  return(.Call("R_bm_rowMedians",x@rawBufferedMatrix,na.rm,PACKAGE="BufferedMatrix"))
+
+
+
+})

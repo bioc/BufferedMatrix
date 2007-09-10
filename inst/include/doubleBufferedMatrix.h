@@ -70,7 +70,7 @@ void dbm_rowSums(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_rowVars(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results);
-
+void dbm_rowMedians(doubleBufferedMatrix Matrix,int naflag,double *results);
 
 void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results);
 void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results);

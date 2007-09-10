@@ -493,6 +493,23 @@ void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results){
 
 }
 
+
+void dbm_rowMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
+  
+  static void(*fun)(doubleBufferedMatrix,int, double *) = NULL;
+  
+  if (fun == NULL)
+    fun =  (void(*)(doubleBufferedMatrix, int, double *))R_GetCCallable("BufferedMatrix","dbm_rowMedians");
+  fun(Matrix,naflag,results);
+  return;
+
+}
+
+
+
+
+
+
 void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
 
   static void(*fun)(doubleBufferedMatrix,int, double *) = NULL;

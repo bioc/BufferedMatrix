@@ -59,7 +59,8 @@ void R_init_BufferedMatrix(){
   R_RegisterCCallable("BufferedMatrix", "dbm_rowSums", (DL_FUNC)dbm_rowSums);
   R_RegisterCCallable("BufferedMatrix", "dbm_rowVars", (DL_FUNC)dbm_rowVars);
   R_RegisterCCallable("BufferedMatrix", "dbm_rowMax", (DL_FUNC)dbm_rowMax);
-  R_RegisterCCallable("BufferedMatrix", "dbm_rowMin", (DL_FUNC)dbm_rowMin);
+  R_RegisterCCallable("BufferedMatrix", "dbm_rowMin", (DL_FUNC)dbm_rowMin); 
+  R_RegisterCCallable("BufferedMatrix", "dbm_rowMedians", (DL_FUNC)dbm_rowMedians);
   R_RegisterCCallable("BufferedMatrix", "dbm_colMeans", (DL_FUNC)dbm_colMeans);
   R_RegisterCCallable("BufferedMatrix", "dbm_colSums", (DL_FUNC)dbm_colSums);
   R_RegisterCCallable("BufferedMatrix", "dbm_colVars", (DL_FUNC)dbm_colVars);

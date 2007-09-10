@@ -25,6 +25,7 @@
  **  Oct 27, 2006 - add R_bm_getFileNames
  **  Nov 12, 2006 - fix some compiler warnings
  **  Nov 18, 2006 - Increase speed of R_bm_MakeSubmatrix
+ **  Sep  9, 2006 - add R_bm_rowMedians
  **
  *****************************************************/
 
@@ -1719,6 +1720,31 @@ SEXP R_bm_rowMin(SEXP R_BufferedMatrix,SEXP removeNA){
 
 }
 
+
+SEXP R_bm_rowMedians(SEXP R_BufferedMatrix,SEXP removeNA){
+
+  SEXP returnvalue;
+  doubleBufferedMatrix Matrix;
+  int NAflag;
+
+
+  Matrix =  R_ExternalPtrAddr(R_BufferedMatrix);
+
+  /* Check the supplied BufferedMatrices */
+  if (Matrix == NULL){
+    error("Non valid BufferedMatrix supplied.\n");
+  }
+  
+  PROTECT(returnvalue = allocVector(REALSXP,dbm_getRows(Matrix)));
+  NAflag = LOGICAL(removeNA)[0];
+
+  dbm_rowMedians(Matrix,NAflag,REAL(returnvalue));
+
+
+  UNPROTECT(1);
+  return returnvalue;
+
+}
 
 
 SEXP R_bm_colMeans(SEXP R_BufferedMatrix,SEXP removeNA){

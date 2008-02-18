@@ -561,13 +561,23 @@ agree.checks <- function(buff.matrix,r.matrix,err.tol=1e-10){
     stop("No agreement in colSums")
   }
   
+  ### this is to get around the fact that R doesn't like to compute NA on an entire vector of NA when 
+  ### computing variance
+  my.Var <- function(x,na.rm=FALSE){
+   if (all(is.na(x))){
+     return(NA)
+   } else {
+     var(x,na.rm=na.rm)
+   }
+
+  }
   
-  if(any(abs(rowVars(buff.matrix,na.rm=TRUE) - apply(r.matrix,1,var,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
+  if(any(abs(rowVars(buff.matrix,na.rm=TRUE) - apply(r.matrix,1,my.Var,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in rowVars")
   }
   
   
-  if(any(abs(colVars(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,var,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
+  if(any(abs(colVars(buff.matrix,na.rm=TRUE) - apply(r.matrix,2,my.Var,na.rm=TRUE))  > err.tol,na.rm=TRUE)){
     stop("No agreement in rowVars")
   }
 

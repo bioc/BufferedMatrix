@@ -32,3 +32,6 @@ Jun 16, 2007 (1.1.2) : add MoveStorageDirectory()
 Aug 3, 2007 (1.1.4): Fix MoveStorageDirectory() on windows implementation
 
 Sep 9, 2007 (1.1.5): Add rowMedians
+
+
+Feb 18, 2007 (1.3.1): Add NAMESPACE, fix test that fails on var calculation

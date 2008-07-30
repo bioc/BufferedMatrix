@@ -1,7 +1,7 @@
 %\VignetteIndexEntry{BufferedMatrix: Introduction}
 %\VignettePackage{BufferedMatrix}
 \documentclass[12pt]{article}
-\usepackage{amsmath,pstricks}
+\usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage[authoryear,round]{natbib}
 

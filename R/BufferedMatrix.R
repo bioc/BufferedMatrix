@@ -778,7 +778,7 @@ setMethod("colApply", "BufferedMatrix", function(x,FUN,...){
     stop("Problem applying function column wise")
   }
   if (return.dim1 ==1){
-    return(do.call("c",result[[2]]))
+    return(do.call(c,result[[2]]))
   } else {
     return(new("BufferedMatrix",rawBufferedMatrix=result[[2]]))
   }
@@ -814,7 +814,7 @@ setMethod("rowApply", "BufferedMatrix", function(x,FUN,...){
     stop("Problem applying function row wise")
   }
   if (return.dim1 ==1){
-    return(do.call("c",result[[2]]))
+    return(do.call(c,result[[2]]))
   } else {
     return(new("BufferedMatrix",rawBufferedMatrix=result[[2]]))
   }

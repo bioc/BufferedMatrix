@@ -13,6 +13,11 @@
 \alias{ewApply}
 \alias{pow}
 
+\alias{colMeans}
+\alias{colSums}
+\alias{rowMeans}
+\alias{rowSums}
+
 \alias{colMax}
 \alias{colMin}
 \alias{colSd}
@@ -29,6 +34,7 @@
 \alias{rowSd}
 \alias{rowVars}
 \alias{rowMedians}
+
 
 \alias{colApply}
 \alias{rowApply}

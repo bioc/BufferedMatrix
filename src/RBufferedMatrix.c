@@ -1139,7 +1139,7 @@ SEXP R_bm_getPrefix(SEXP R_BufferedMatrix){
 
   PROTECT(returnvalue = allocVector(STRSXP,1));
 
-  SET_VECTOR_ELT(returnvalue,0,mkChar(prefix));
+  SET_STRING_ELT(returnvalue,0,mkChar(prefix));
 
   
 

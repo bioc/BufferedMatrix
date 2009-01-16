@@ -26,6 +26,7 @@
  **  Nov 12, 2006 - fix some compiler warnings
  **  Nov 18, 2006 - Increase speed of R_bm_MakeSubmatrix
  **  Sep  9, 2006 - add R_bm_rowMedians
+ ** Jan 15, 2009 - fix VECTOR_ELT/STRING_ELT issues
  **
  *****************************************************/
 
@@ -87,7 +88,7 @@ static int checkBufferedMatrix(SEXP R_BufferedMatrix){
   if (!IS_CHARACTER(tagsxp)){
     return 0;
   } else {
-    tagname = CHAR(VECTOR_ELT(tagsxp,0));
+    tagname = CHAR(STRING_ELT(tagsxp,0));
     if (strncmp(truetagname,tagname,15) !=0){
       return 0;
     } else {
@@ -119,8 +120,8 @@ static int checkBufferedMatrix(SEXP R_BufferedMatrix){
 
 SEXP R_bm_Create(SEXP R_prefix, SEXP R_directory, SEXP R_max_rows, SEXP R_max_cols){
 
-  const char *prefix = CHAR(VECTOR_ELT(R_prefix,0));
-  const char *directory = CHAR(VECTOR_ELT(R_directory,0));
+  const char *prefix = CHAR(STRING_ELT(R_prefix,0));
+  const char *directory = CHAR(STRING_ELT(R_directory,0));
 
   double max_rows = asReal(R_max_rows);
   double max_cols = asReal(R_max_cols);
@@ -135,7 +136,7 @@ SEXP R_bm_Create(SEXP R_prefix, SEXP R_directory, SEXP R_max_rows, SEXP R_max_co
 
   PROTECT(tag = allocVector(STRSXP,1));
 
-  SET_VECTOR_ELT(tag,0,mkChar("RBufferedMatrix"));
+  SET_STRING_ELT(tag,0,mkChar("RBufferedMatrix"));
 
   PROTECT(val = R_MakeExternalPtr(Matrix, tag, R_NilValue));
 
@@ -166,7 +167,7 @@ SEXP R_bm_Test_C(SEXP R_BufferedMatrix){
   tempsxp = R_ExternalPtrTag(R_BufferedMatrix);
 
   if (IS_CHARACTER(tempsxp)){
-    Rprintf("%s\n",CHARACTER_POINTER(VECTOR_ELT(tempsxp,0)));
+    Rprintf("%s\n",CHARACTER_POINTER(STRING_ELT(tempsxp,0)));
   }
 
 
@@ -481,7 +482,7 @@ SEXP R_bm_SetPrefix(SEXP R_BufferedMatrix, SEXP R_Prefix){
 
   
   doubleBufferedMatrix Matrix;
-  const char *prefix = CHAR(VECTOR_ELT(R_Prefix,0));
+  const char *prefix = CHAR(STRING_ELT(R_Prefix,0));
 
   if(!checkBufferedMatrix(R_BufferedMatrix)){
     error("Invalid ExternalPointer supplied to R_bm_SetPrefix");
@@ -1173,7 +1174,7 @@ SEXP R_bm_getDirectory(SEXP R_BufferedMatrix){
 
   PROTECT(returnvalue = allocVector(STRSXP,1));
 
-  SET_VECTOR_ELT(returnvalue,0,mkChar(directory));
+  SET_STRING_ELT(returnvalue,0,mkChar(directory));
 
   
 
@@ -2201,7 +2202,7 @@ SEXP isBufferedMatrix(SEXP R_BufferedMatrix){
   if (!IS_CHARACTER(tagsxp)){
     LOGICAL(returnvalue)[0] = FALSE;
   } else {
-    tagname = CHAR(VECTOR_ELT(tagsxp,0));
+    tagname = CHAR(STRING_ELT(tagsxp,0));
     if (strncmp(truetagname,tagname,15) !=0){
       LOGICAL(returnvalue)[0] = FALSE;
     } else {
@@ -2388,7 +2389,7 @@ SEXP R_bm_getFileNames(SEXP R_BufferedMatrix){
   for (i =0; i < dbm_getCols(Matrix); i++){
 
     filename = dbm_getFileName(Matrix,i);
-    SET_VECTOR_ELT(returnvalue,i,mkChar(filename));
+    SET_STRING_ELT(returnvalue,i,mkChar(filename));
     Free(filename);
   }
   UNPROTECT(1);
@@ -2469,7 +2470,7 @@ SEXP R_bm_setNewDirectory(SEXP R_BufferedMatrix, SEXP R_new_directory){
 
   SEXP returnvalue= R_BufferedMatrix;
   doubleBufferedMatrix Matrix; 
-  const char *newdirectory = CHAR(VECTOR_ELT(R_new_directory,0));
+  const char *newdirectory = CHAR(STRING_ELT(R_new_directory,0));
   
   
   if(!checkBufferedMatrix(R_BufferedMatrix)){

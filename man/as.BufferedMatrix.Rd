@@ -12,14 +12,16 @@
 }
 \arguments{
   \item{x}{an R object}
-  \item{bufferrows}{number of rows to be buffered if the row buffer is activated}
+  \item{bufferrows}{number of rows to be buffered if the row buffer is
+    activated} 
   \item{buffercols}{number of columns to be buffered}
   \item{directory}{path to directory where temporary files should be stored}
 
 }
 \details{
   These functions are useful for converting between R
-  \code{\link{matrix}} objects and \code{\link[BufferedMatrix-class]{BufferedMatrix}} objects.
+  \code{\link{matrix}} objects and
+  \code{\link[BufferedMatrix:BufferedMatrix-class]{BufferedMatrix}} objects. 
 }
 \author{B. M. Bolstad <bmb@bmbolstad.com>}
 \keyword{manip}

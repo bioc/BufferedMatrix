@@ -1,5 +1,5 @@
 Package: BufferedMatrix
-Version: 1.14.0
+Version: 1.15.0
 Title: A matrix data storage object held in temporary files
 Author: Benjamin Milo Bolstad <bmb@bmbolstad.com>
 Maintainer: Benjamin Milo Bolstad <bmb@bmbolstad.com>

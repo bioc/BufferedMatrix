@@ -1,4 +1,4 @@
-library(BufferedMatrix);library.dynam("BufferedMatrix");
+library(BufferedMatrix);library.dynam("BufferedMatrix","BufferedMatrix", .libPaths());
 
 Temp <- createBufferedMatrix(100)
 dim(Temp)

@@ -1,4 +1,4 @@
-library(BufferedMatrix);library.dynam("BufferedMatrix");
+library(BufferedMatrix);library.dynam("BufferedMatrix","BufferedMatrix", .libPaths());
 
 
 ### this is used to control how many repetitions in something below

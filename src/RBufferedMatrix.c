@@ -167,7 +167,7 @@ SEXP R_bm_Test_C(SEXP R_BufferedMatrix){
   tempsxp = R_ExternalPtrTag(R_BufferedMatrix);
 
   if (IS_CHARACTER(tempsxp)){
-    Rprintf("%s\n",CHARACTER_POINTER(STRING_ELT(tempsxp,0)));
+    Rprintf("%s\n",CHAR(STRING_ELT(tempsxp,0)));
   }
 
 

@@ -1,6 +1,8 @@
 exportClasses(BufferedMatrix)
 exportPattern("^[^\\.]")
 useDynLib("BufferedMatrix")
+importFrom("methods", "new","show")
+
 
 
 exportMethods("buffer.dim",
@@ -48,7 +50,6 @@ exportMethods("buffer.dim",
 "disk.usage",
 "AddColumn",
 "MoveStorageDirectory",
-coerce,
 "[",
 show,
 "as.matrix",

@@ -24,7 +24,7 @@ as.BufferedMatrix <- function(x,bufferrows=1, buffercols=1,directory=getwd()){
 
 
   if (is.matrix(x)){
-    newBufferedMatrix <- createBufferedMatrix(rows=dim(x)[1],cols=dim(x)[2],bufferrows=bufferrows, buffercols=buffercols,director=directory)
+    newBufferedMatrix <- createBufferedMatrix(rows=dim(x)[1],cols=dim(x)[2],bufferrows=bufferrows, buffercols=buffercols,directory=directory)
 
     if (storage.mode(x) == "double"){
 

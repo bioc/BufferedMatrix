@@ -1144,7 +1144,7 @@ SEXP R_bm_getPrefix(SEXP R_BufferedMatrix){
   
 
 
-  Free(prefix);
+  R_Free(prefix);
   UNPROTECT(1);
   return returnvalue;
 
@@ -1179,7 +1179,7 @@ SEXP R_bm_getDirectory(SEXP R_BufferedMatrix){
   
 
 
-  Free(directory);
+  R_Free(directory);
   UNPROTECT(1);
   return returnvalue;
 
@@ -2390,7 +2390,7 @@ SEXP R_bm_getFileNames(SEXP R_BufferedMatrix){
 
     filename = dbm_getFileName(Matrix,i);
     SET_STRING_ELT(returnvalue,i,mkChar(filename));
-    Free(filename);
+    R_Free(filename);
   }
   UNPROTECT(1);
   return returnvalue;

@@ -711,7 +711,7 @@ static int dbm_LoadAdditionalColumn(doubleBufferedMatrix Matrix,int col, int whe
   FILE *myfile;
   int blocks_read;
 
-  Matrix->coldata[where] = Calloc(Matrix->rows,double);
+  Matrix->coldata[where] = R_Calloc(Matrix->rows,double);
   Matrix->which_cols[where] = col;
   myfile = fopen(Matrix->filenames[col],mode);
   if (myfile == NULL)
@@ -870,7 +870,7 @@ doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,const char *prefix, con
   struct _double_buffered_matrix *handle;
 
   
-  handle = (struct _double_buffered_matrix *)Calloc(1,struct _double_buffered_matrix);
+  handle = (struct _double_buffered_matrix *)R_Calloc(1,struct _double_buffered_matrix);
 
 
 
@@ -889,12 +889,12 @@ doubleBufferedMatrix dbm_alloc(int max_rows,int max_cols,const char *prefix, con
   
   handle->first_rowdata =0;
 
-  tmp = Calloc(strlen(prefix)+1,char);
+  tmp = R_Calloc(strlen(prefix)+1,char);
   strcpy(tmp,prefix);
 
   handle->fileprefix = tmp;
   
-  tmp = Calloc(strlen(directory)+1,char);
+  tmp = R_Calloc(strlen(directory)+1,char);
   strcpy(tmp,directory);
   
   handle->filedirectory = tmp;
@@ -938,31 +938,31 @@ int dbm_free(doubleBufferedMatrix Matrix){
     remove(handle->filenames[i]);
   }
 
-  Free(handle->which_cols);
+  R_Free(handle->which_cols);
 
   for (i = 0; i < handle->cols; i++){
-    Free(handle->filenames[i]);
+    R_Free(handle->filenames[i]);
   }
-  Free(handle->filenames);
+  R_Free(handle->filenames);
 
   if (!(handle->colmode)){
     for (i=0; i < handle->cols; i++){
-      Free(handle->rowdata[i]);
+      R_Free(handle->rowdata[i]);
     }
-    Free(handle->rowdata);
+    R_Free(handle->rowdata);
   }
 
 
   for (i=0; i < lastcol; i++){
-    Free(handle->coldata[i]);
+    R_Free(handle->coldata[i]);
   }
-  Free(handle->coldata);
+  R_Free(handle->coldata);
   
 
-  Free(handle->fileprefix);
-  Free(handle->filedirectory);
+  R_Free(handle->fileprefix);
+  R_Free(handle->filedirectory);
 
-  Free(handle);
+  R_Free(handle);
   return 0;
 }
 
@@ -1029,9 +1029,9 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
   /* Handle the housekeeping of indices, clearing buffer if needed etc */
   if (Matrix->cols < Matrix->max_cols){
     /* No need to clear out column buffer */
-    int *temp_indices = Calloc(Matrix->cols+1, int);
+    int *temp_indices = R_Calloc(Matrix->cols+1, int);
     int *temp_old_indices = Matrix->which_cols;
-    double **temp_ptr = Calloc(Matrix->cols +1,double *);
+    double **temp_ptr = R_Calloc(Matrix->cols +1,double *);
     double **old_temp_ptr = Matrix->coldata;
 
     for (j =0; j < Matrix->cols; j++){
@@ -1039,7 +1039,7 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
       temp_ptr[j] = Matrix->coldata[j];
     }
     temp_indices[Matrix->cols] =Matrix->cols;
-    temp_ptr[Matrix->cols] = Calloc(Matrix->rows,double);
+    temp_ptr[Matrix->cols] = R_Calloc(Matrix->rows,double);
 
     Matrix->coldata = temp_ptr;
     
@@ -1052,18 +1052,18 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
     which_col_num = Matrix->cols;
     Matrix->which_cols = temp_indices;
-    Free(temp_old_indices);
-    Free(old_temp_ptr);
+    R_Free(temp_old_indices);
+    R_Free(old_temp_ptr);
 
     if (!(Matrix->colmode)){
       /* Now handle the row buffer */
       old_temp_ptr = Matrix->rowdata;
-      temp_ptr = Calloc(Matrix->cols+1,double *);
+      temp_ptr = R_Calloc(Matrix->cols+1,double *);
       
       for (j =0; j <  Matrix->cols; j++){
 	temp_ptr[j] =  Matrix->rowdata[j];
       }
-      temp_ptr[Matrix->cols] = Calloc(Matrix->max_rows,double);
+      temp_ptr[Matrix->cols] = R_Calloc(Matrix->max_rows,double);
       
       /* for (i=0; i < Matrix->max_rows; i++){
 	 temp_ptr[Matrix->cols][i] = 0.0;   // (cols)*rows + i; 
@@ -1074,7 +1074,7 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
 
       Matrix->rowdata = temp_ptr;
-      Free(old_temp_ptr);
+      R_Free(old_temp_ptr);
     }
 
   } else {
@@ -1113,12 +1113,12 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
     
     if (!(Matrix->colmode)){
       old_temp_ptr = Matrix->rowdata;
-      temp_ptr = Calloc(Matrix->cols+1,double *);
+      temp_ptr = R_Calloc(Matrix->cols+1,double *);
       
       for (j =0; j < Matrix->cols; j++){
 	temp_ptr[j] = Matrix->rowdata[j];
       }
-      temp_ptr[Matrix->cols] = Calloc(Matrix->max_rows,double);
+      temp_ptr[Matrix->cols] = R_Calloc(Matrix->max_rows,double);
       
       /*
 	for (i=0; i < Matrix->max_rows; i++){
@@ -1128,14 +1128,14 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
       memset(&temp_ptr[Matrix->cols][0],0,sizeof(double)* Matrix->max_rows);
       
       Matrix->rowdata = temp_ptr;
-      Free(old_temp_ptr);
+      R_Free(old_temp_ptr);
     }
 
 
   }
   /* now do the file stuff */
 
-  char **temp_filenames = Calloc(Matrix->cols+1,char *);
+  char **temp_filenames = R_Calloc(Matrix->cols+1,char *);
   char *temp_name;
   char **temp_names_ptr = Matrix->filenames;
 
@@ -1148,17 +1148,17 @@ int dbm_AddColumn(doubleBufferedMatrix Matrix){
 
   temp_name = (char *)R_tmpnam(Matrix->fileprefix,Matrix->filedirectory);
 
-  char *tmp = Calloc(strlen(temp_name)+1,char);
+  char *tmp = R_Calloc(strlen(temp_name)+1,char);
   strcpy(tmp,temp_name);
 
-  temp_filenames[Matrix->cols] = Calloc(strlen(tmp)+1,char);
+  temp_filenames[Matrix->cols] = R_Calloc(strlen(tmp)+1,char);
   temp_filenames[Matrix->cols] = strcpy(temp_filenames[Matrix->cols],tmp);
 
   Matrix->filenames = temp_filenames;
 
-  /*   SHOULD NEVER HAVE BEEN HERE. CAUSED CRASHES ON WINDOWS Free(temp_name); */
-  Free(temp_names_ptr);
-  Free(tmp);
+  /*   SHOULD NEVER HAVE BEEN HERE. CAUSED CRASHES ON WINDOWS R_Free(temp_name); */
+  R_Free(temp_names_ptr);
+  R_Free(tmp);
 
 
   /* Finally lets write it all out to a file */
@@ -1252,21 +1252,21 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
 	  Matrix->coldata[j-1] = Matrix->coldata[j];
 	  Matrix->which_cols[j-1] = Matrix->which_cols[j];
 	}
-	Free(tmpptr);
+	R_Free(tmpptr);
       }
       
       tmpptr2 = Matrix->coldata;
       tmpptr3 = Matrix->which_cols;
       
-      Matrix->coldata = Calloc(new_maxcol,double *);
-      Matrix->which_cols = Calloc(new_maxcol,int);
+      Matrix->coldata = R_Calloc(new_maxcol,double *);
+      Matrix->which_cols = R_Calloc(new_maxcol,int);
       
       for (j=0; j < new_maxcol; j++){
 	Matrix->coldata[j] = tmpptr2[j];
 	Matrix->which_cols[j] = tmpptr3[j];
       }
-      Free(tmpptr2);
-      Free(tmpptr3);
+      R_Free(tmpptr2);
+      R_Free(tmpptr3);
     }
     Matrix->max_cols = new_maxcol;
 
@@ -1287,7 +1287,7 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
     // Figure out which columns to add
     // rule will be to add columns in numerical order (ie column 0 if not it, then 1 if not in and so on)
     
-    whichadd = Calloc(n_cols_add,int);
+    whichadd = R_Calloc(n_cols_add,int);
     
     min_j=0;
     for (i=0; i < n_cols_add; i++){
@@ -1306,8 +1306,8 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
     tmpptr2 = Matrix->coldata;
     tmpptr3 = Matrix->which_cols;
     
-    Matrix->coldata = Calloc(Matrix->max_cols+ n_cols_add, double *);
-    Matrix->which_cols = Calloc(new_maxcol+ n_cols_add,int);  
+    Matrix->coldata = R_Calloc(Matrix->max_cols+ n_cols_add, double *);
+    Matrix->which_cols = R_Calloc(new_maxcol+ n_cols_add,int);  
     for (j=0; j < Matrix->max_cols; j++){
       Matrix->coldata[j] = tmpptr2[j];
       Matrix->which_cols[j] = tmpptr3[j];
@@ -1316,9 +1316,9 @@ int dbm_ResizeColBuffer(doubleBufferedMatrix Matrix, int new_maxcol){
     for (i=0; i < n_cols_add; i++){
       dbm_LoadAdditionalColumn(Matrix,whichadd[i], Matrix->max_cols + i);
     }
-    Free(tmpptr2);
-    Free(tmpptr3);
-    Free(whichadd);
+    R_Free(tmpptr2);
+    R_Free(tmpptr3);
+    R_Free(whichadd);
 
     Matrix->max_cols = new_maxcol;
   }
@@ -1386,11 +1386,11 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
     for (j =0; j < Matrix->cols; j++){
       // printf("fixing col %d in row buffer\n",j);
       tmpptr = Matrix->rowdata[j];
-      Matrix->rowdata[j] = Calloc(new_maxrow,double);
+      Matrix->rowdata[j] = R_Calloc(new_maxrow,double);
       for (i=0; i < new_maxrow; i++){
 	 Matrix->rowdata[j][i] = tmpptr[i];
       }
-      Free(tmpptr);
+      R_Free(tmpptr);
     }
     Matrix->max_rows = new_maxrow;
   } else {
@@ -1403,8 +1403,8 @@ int dbm_ResizeRowBuffer(doubleBufferedMatrix Matrix, int new_maxrow){
     
     for (j =0; j < Matrix->cols; j++){ 
       tmpptr = Matrix->rowdata[j];
-      Matrix->rowdata[j] = Calloc(new_maxrow,double);
-      Free(tmpptr);
+      Matrix->rowdata[j] = R_Calloc(new_maxrow,double);
+      R_Free(tmpptr);
     }
       
 
@@ -1484,9 +1484,9 @@ void dbm_RowMode(doubleBufferedMatrix Matrix){
    **             - set colmode flag to false
    */
   if (Matrix->colmode == 1){
-    Matrix->rowdata = Calloc(Matrix->cols +1,double *);
+    Matrix->rowdata = R_Calloc(Matrix->cols +1,double *);
     for (j =0; j < Matrix->cols; j++){
-      Matrix->rowdata[j] = Calloc(Matrix->max_rows,double);
+      Matrix->rowdata[j] = R_Calloc(Matrix->max_rows,double);
     }
     dbm_LoadRowBuffer(Matrix,0); /* this both fills the row buffer and copys across anything in the current column buffer */
     Matrix->colmode =0;
@@ -1519,9 +1519,9 @@ void dbm_ColMode(doubleBufferedMatrix Matrix){
     dbm_FlushRowBuffer(Matrix);
     
     for (j =0; j < Matrix->cols; j++){
-      Free(Matrix->rowdata[j]);
+      R_Free(Matrix->rowdata[j]);
     }
-    Free(Matrix->rowdata);
+    R_Free(Matrix->rowdata);
     Matrix->colmode = 1;
   }
 
@@ -1542,11 +1542,11 @@ void dbm_SetPrefix(doubleBufferedMatrix Matrix,const char *prefix){
 
   char *tmp;
 
-  tmp = Calloc(strlen(prefix)+1,char);
+  tmp = R_Calloc(strlen(prefix)+1,char);
   strcpy(tmp,prefix);
   
   if (Matrix->fileprefix != NULL){
-    Free(Matrix->fileprefix);
+    R_Free(Matrix->fileprefix);
   }
   Matrix->fileprefix = tmp;
 
@@ -1924,7 +1924,7 @@ int dbm_getValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
      /** First use what is already in the buffers **/
 
      BufferContents= dbm_whatsInColumnBuffer(Matrix); 
-     colsdone = Calloc(Matrix->cols,int);
+     colsdone = R_Calloc(Matrix->cols,int);
      
      for (j=0; j < Matrix->max_cols; j++){
        for (i=0; i < nrows; i++){
@@ -1947,7 +1947,7 @@ int dbm_getValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
        }
      }
 
-     Free(colsdone);
+     R_Free(colsdone);
    } else {
      /* everything is already in memory, no need to read in */
      for (j =0; j < Matrix->cols; j++){
@@ -2055,7 +2055,7 @@ int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
      /** First use what is already in the buffers **/
 
      BufferContents= dbm_whatsInColumnBuffer(Matrix); 
-     colsdone = Calloc(Matrix->cols,int);
+     colsdone = R_Calloc(Matrix->cols,int);
  
      for (j=0; j < Matrix->max_cols; j++){
        for (i=0; i < nrows; i++){
@@ -2076,7 +2076,7 @@ int dbm_setValueRow(doubleBufferedMatrix Matrix, int *rows, double *value, int n
        }
      }
 
-     Free(colsdone);
+     R_Free(colsdone);
     } else {
       for (j =0; j < Matrix->cols; j++){  
 	for (i =0; i < nrows; i++){
@@ -2107,7 +2107,7 @@ char *dbm_getPrefix(doubleBufferedMatrix Matrix){
   char *returnvalue;
   int len= strlen(Matrix->fileprefix);
 
-  returnvalue = Calloc(len+1,char);
+  returnvalue = R_Calloc(len+1,char);
 
   strcpy(returnvalue,Matrix->fileprefix);
 
@@ -2121,7 +2121,7 @@ char *dbm_getDirectory(doubleBufferedMatrix Matrix){
   char *returnvalue;
   int len = strlen(Matrix->filedirectory);
 
-  returnvalue = Calloc(len+1,char);
+  returnvalue = R_Calloc(len+1,char);
 
   strcpy(returnvalue,Matrix->filedirectory);
 
@@ -2135,7 +2135,7 @@ char *dbm_getFileName(doubleBufferedMatrix Matrix, int col){
   char *returnvalue;
   int len = strlen(Matrix->filenames[col]);
 
-  returnvalue = Calloc(len+1,char);
+  returnvalue = R_Calloc(len+1,char);
 
   strcpy(returnvalue,Matrix->filenames[col]);
 
@@ -2160,7 +2160,7 @@ int dbm_setNewDirectory(doubleBufferedMatrix Matrix, const char *newdirectory){
 
   int len = strlen(newdirectory);
 
-  directory = Calloc(len+1,char);
+  directory = R_Calloc(len+1,char);
 
   strcpy(directory,newdirectory);
 
@@ -2168,16 +2168,16 @@ int dbm_setNewDirectory(doubleBufferedMatrix Matrix, const char *newdirectory){
 
   for (i =0; i < Matrix->cols; i++){
     temp_name = (char *)R_tmpnam(Matrix->fileprefix,newdirectory);
-    tmp = Calloc(strlen(temp_name)+1,char);
+    tmp = R_Calloc(strlen(temp_name)+1,char);
     strcpy(tmp,temp_name);
     rename(Matrix->filenames[i], tmp);
     Matrix->filenames[i] = tmp;
-    /*  Free(temp_name); */
+    /*  R_Free(temp_name); */
   }
 
   Matrix->filedirectory = directory;
 
-  Free(olddirectory);
+  R_Free(olddirectory);
 
 
   return 0;
@@ -2230,7 +2230,7 @@ int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),doub
   if (Matrix->cols > Matrix->max_cols){  
 
     BufferContents= dbm_whatsInColumnBuffer(Matrix);
-    colsdone = Calloc(Matrix->cols,int);
+    colsdone = R_Calloc(Matrix->cols,int);
     
     /* Matrix doesn't have all the columns in the buffer */
     /* First do the columns currently in the buffer */
@@ -2253,7 +2253,7 @@ int dbm_ewApply(doubleBufferedMatrix Matrix,double (* fn)(double, double *),doub
     }
     
 
-    Free(colsdone);
+    R_Free(colsdone);
   } else {
     /* everything is in memory. Lets process it */
     for (j=0; j < Matrix->cols; j++){
@@ -2287,7 +2287,7 @@ double dbm_max(doubleBufferedMatrix Matrix,int naflag, int *foundfinite){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   *foundfinite=0;
 
@@ -2343,7 +2343,7 @@ double dbm_max(doubleBufferedMatrix Matrix,int naflag, int *foundfinite){
     }
   }
 
-  Free(colsdone);
+  R_Free(colsdone);
 
   return max;
 }
@@ -2364,7 +2364,7 @@ double dbm_min(doubleBufferedMatrix Matrix,int naflag, int *foundfinite){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   *foundfinite=0;
   
@@ -2424,7 +2424,7 @@ double dbm_min(doubleBufferedMatrix Matrix,int naflag, int *foundfinite){
   }
 
   
-  Free(colsdone);
+  R_Free(colsdone);
 
   return min;
 }
@@ -2446,7 +2446,7 @@ double dbm_mean(doubleBufferedMatrix Matrix,int naflag){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -2502,7 +2502,7 @@ double dbm_mean(doubleBufferedMatrix Matrix,int naflag){
     }
   }
   
-  Free(colsdone);
+  R_Free(colsdone);
 
   return mean/(double)(count);
 }
@@ -2523,7 +2523,7 @@ double dbm_sum(doubleBufferedMatrix Matrix,int naflag){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
   
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -2575,7 +2575,7 @@ double dbm_sum(doubleBufferedMatrix Matrix,int naflag){
     }
   }
   
-  Free(colsdone);
+  R_Free(colsdone);
   
   return sum;
 }
@@ -2597,7 +2597,7 @@ double dbm_var(doubleBufferedMatrix Matrix,int naflag){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
   
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -2671,7 +2671,7 @@ double dbm_var(doubleBufferedMatrix Matrix,int naflag){
     }
   }
   
-  Free(colsdone);
+  R_Free(colsdone);
   
   if (firstnonNAfound){
     return s2/(double)(count-1);  /* -1 for sample sd and -1 for overcount on last iteration */
@@ -2692,8 +2692,8 @@ void dbm_rowMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
 
   int i,j;
   double *value;
-  int *counts = Calloc(Matrix->rows,int);
-  int *foundNA = Calloc(Matrix->rows,int);
+  int *counts = R_Calloc(Matrix->rows,int);
+  int *foundNA = R_Calloc(Matrix->rows,int);
 
   
   
@@ -2724,8 +2724,8 @@ void dbm_rowMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
   }
 
 
-  Free(counts);
-  Free(foundNA);
+  R_Free(counts);
+  R_Free(foundNA);
 
 
 }
@@ -2737,7 +2737,7 @@ void dbm_rowSums(doubleBufferedMatrix Matrix,int naflag,double *results){
 
   int i,j;
   double *value;
-  int *foundNA = Calloc(Matrix->rows,int);
+  int *foundNA = R_Calloc(Matrix->rows,int);
   
   
   
@@ -2764,7 +2764,7 @@ void dbm_rowSums(doubleBufferedMatrix Matrix,int naflag,double *results){
     } 
   }
 
-  Free(foundNA);
+  R_Free(foundNA);
 
 
 }
@@ -2813,7 +2813,7 @@ void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -2835,7 +2835,7 @@ void dbm_colMeans(doubleBufferedMatrix Matrix,int naflag,double *results){
       dbm_singlecolMeans(Matrix,j,naflag,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 
 
 }
@@ -2875,7 +2875,7 @@ void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -2897,7 +2897,7 @@ void dbm_colSums(doubleBufferedMatrix Matrix,int naflag,double *results){
       dbm_singlecolSums(Matrix,j,naflag,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 }
 
 
@@ -2909,9 +2909,9 @@ void dbm_rowVars(doubleBufferedMatrix Matrix,int naflag,double *results){
 
   int i,j;
   double *value;
-  int *counts = Calloc(Matrix->rows,int);
-  int *foundNA = Calloc(Matrix->rows,int);
-  double *means = Calloc(Matrix->rows,double);
+  int *counts = R_Calloc(Matrix->rows,int);
+  int *foundNA = R_Calloc(Matrix->rows,int);
+  double *means = R_Calloc(Matrix->rows,double);
   
   
   
@@ -2954,9 +2954,9 @@ void dbm_rowVars(doubleBufferedMatrix Matrix,int naflag,double *results){
     }
   }
 
-  Free(means);
-  Free(counts);
-  Free(foundNA);
+  R_Free(means);
+  R_Free(counts);
+  R_Free(foundNA);
 }
 
 
@@ -3024,7 +3024,7 @@ void dbm_colVars(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -3046,7 +3046,7 @@ void dbm_colVars(doubleBufferedMatrix Matrix,int naflag,double *results){
       dbm_singlecolVars(Matrix,j,naflag,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 }
 
 
@@ -3073,7 +3073,7 @@ void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results){
   int i,j;
   double *value;
 
-  int *isNA = Calloc(Matrix->rows,int);
+  int *isNA = R_Calloc(Matrix->rows,int);
 
   for (i=0; i < Matrix->rows; i++){
     results[i] = *dbm_internalgetValue(Matrix,i,0);
@@ -3113,7 +3113,7 @@ void dbm_rowMax(doubleBufferedMatrix Matrix,int naflag,double *results){
 
 
   
-  Free(isNA);
+  R_Free(isNA);
   
 }
 
@@ -3160,7 +3160,7 @@ void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -3182,7 +3182,7 @@ void dbm_colMax(doubleBufferedMatrix Matrix,int naflag,double *results){
       dbm_singlecolMax(Matrix,j,naflag,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 }
 
 
@@ -3204,7 +3204,7 @@ void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results){
   int i,j;
   double *value;
 
-  int *isNA = Calloc(Matrix->rows,int);
+  int *isNA = R_Calloc(Matrix->rows,int);
 
   for (i=0; i < Matrix->rows; i++){
     results[i] = *dbm_internalgetValue(Matrix,i,0);
@@ -3244,7 +3244,7 @@ void dbm_rowMin(doubleBufferedMatrix Matrix,int naflag,double *results){
 
 
   
-  Free(isNA);
+  R_Free(isNA);
   
 }
 
@@ -3289,7 +3289,7 @@ void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -3311,7 +3311,7 @@ void dbm_colMin(doubleBufferedMatrix Matrix,int naflag,double *results){
       dbm_singlecolMin(Matrix,j,naflag,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 
 }
 
@@ -3339,14 +3339,14 @@ static void dbm_singlecolMedian(doubleBufferedMatrix Matrix,int j,int naflag,dou
 
   int i, i_nonNA=0;
   double *value;
-  double *buffer = Calloc(Matrix->rows,double);
+  double *buffer = R_Calloc(Matrix->rows,double);
   
 
   for (i=0; i < Matrix->rows; i++){
     value = dbm_internalgetValue(Matrix,i,j);
     if (ISNAN(*value)){
       if (!naflag){
-	Free(buffer);
+	R_Free(buffer);
 	results[j] = R_NaReal;
 	return;
       } 
@@ -3382,7 +3382,7 @@ static void dbm_singlecolMedian(doubleBufferedMatrix Matrix,int j,int naflag,dou
       results[j] = (buffer[(i_nonNA)/2-1] + buffer[(i_nonNA)/2])/2.0;
       }
   */
-  Free(buffer);
+  R_Free(buffer);
 
 
 }
@@ -3398,7 +3398,7 @@ void dbm_colMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -3420,7 +3420,7 @@ void dbm_colMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
       dbm_singlecolMedian(Matrix,j,naflag,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 
 }
 
@@ -3515,7 +3515,7 @@ void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *r
   
   BufferContents= dbm_whatsInColumnBuffer(Matrix);
 
-  colsdone = Calloc(Matrix->cols,int);
+  colsdone = R_Calloc(Matrix->cols,int);
 
   if (Matrix->cols > Matrix->max_cols){
     /* Matrix doesn't have all the columns in the buffer */
@@ -3537,7 +3537,7 @@ void dbm_colRanges(doubleBufferedMatrix Matrix,int naflag, int finite, double *r
       dbm_singlecolRange(Matrix,j,naflag,finite,results);
     }
   }
-  Free(colsdone);
+  R_Free(colsdone);
 
 }
 
@@ -3617,7 +3617,7 @@ void dbm_rowMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
   int i; /* indexes current row */
   int j; /* indexes cols */
  
-  double *buffer = Calloc(Matrix->cols,double);
+  double *buffer = R_Calloc(Matrix->cols,double);
   int j_nonNA=0;
   double *value;
 
@@ -3650,7 +3650,7 @@ void dbm_rowMedians(doubleBufferedMatrix Matrix,int naflag,double *results){
     }
   }
   
-  Free(buffer);
+  R_Free(buffer);
   
 }
 
